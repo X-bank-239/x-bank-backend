@@ -10,6 +10,6 @@ public class CreateUser {
 
     @GetMapping("/create/user")
     public String newUser(@RequestBody User user) {
-        return user.getName() + " 1";
+        return user.getFirstName() + " 1";
     }
 }
