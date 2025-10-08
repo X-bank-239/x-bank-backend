@@ -3,13 +3,16 @@ package com.example.xbankbackend.controllers;
 import com.example.xbankbackend.models.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
 public class CreateUser {
 
-    @GetMapping("/create/user")
+    @PostMapping("/create/user")
     public String newUser(@RequestBody User user) {
-        return user.getFirstName() + " 1";
+        user.setUserId(UUID.randomUUID());
+        return user.toString();
     }
 }

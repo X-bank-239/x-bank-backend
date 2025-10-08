@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Data
 public class User {
+    private UUID userId;
     private String firstName;
     private String lastName;
 
