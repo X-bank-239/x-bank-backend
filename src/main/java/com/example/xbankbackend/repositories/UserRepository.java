@@ -10,16 +10,23 @@ import java.sql.SQLException;
 
 @Repository
 public class UserRepository {
-    private DSLContext dsl = JOOQConfig.createDSLContext();
+    private final DSLContext dsl = JOOQConfig.createDSLContext();
 
     public UserRepository() throws SQLException {
     }
 
-    public User createUser(User user) {
-        return dsl.insertInto(Users.USERS)
+    public void createUser(User user) {
+        dsl.insertInto(Users.USERS)
                 .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate())
                 .returning()
                 .fetchOne()
                 .into(User.class);
+    }
+
+    public boolean haveEmail(String email) {
+        return dsl.selectFrom(Users.USERS)
+                .where(Users.USERS.EMAIL.eq(email))
+                .fetch()
+                .size() == 1;
     }
 }

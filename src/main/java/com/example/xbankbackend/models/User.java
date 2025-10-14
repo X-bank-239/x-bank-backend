@@ -3,9 +3,7 @@ package com.example.xbankbackend.models;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
 
-//import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,5 +15,4 @@ public class User {
     @Email
     private String email;
     private Date birthdate;
-    private List<UUID> paymentsHistory;
 }
