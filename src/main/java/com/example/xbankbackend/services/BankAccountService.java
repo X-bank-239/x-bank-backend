@@ -6,6 +6,7 @@ import com.example.xbankbackend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -20,6 +21,7 @@ public class BankAccountService {
         if (!userRepository.haveUUID(bankAccount.getUserId())) {
             throw new IllegalArgumentException("User with UUID " + bankAccount.getAccountId() + " does not exist");
         }
+        bankAccount.setAmount(BigDecimal.ZERO);
         bankAccount.setAccountId(UUID.randomUUID());
         bankAccountRepository.createBankAccount(bankAccount);
     }

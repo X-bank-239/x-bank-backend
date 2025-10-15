@@ -17,6 +17,7 @@ public class BankAccountRepository {
 
     public void createBankAccount(BankAccount bankAccount) {
         dsl.insertInto(BankAccounts.BANK_ACCOUNTS)
-                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getAmount(), bankAccount.getCurrency(), bankAccount.getAccountType());
+                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getAmount(), bankAccount.getCurrency(), bankAccount.getAccountType())
+                .execute();
     }
 }

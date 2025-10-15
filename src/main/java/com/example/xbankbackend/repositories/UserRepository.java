@@ -20,9 +20,7 @@ public class UserRepository {
     public void createUser(User user) {
         dsl.insertInto(Users.USERS)
                 .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate())
-                .returning()
-                .fetchOne()
-                .into(User.class);
+                .execute();
     }
 
     public boolean haveEmail(String email) {
