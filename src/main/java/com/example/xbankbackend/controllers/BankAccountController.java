@@ -1,29 +1,27 @@
 package com.example.xbankbackend.controllers;
 
-import com.example.xbankbackend.config.JOOQConfig;
 import com.example.xbankbackend.models.BankAccount;
-import org.jooq.DSLContext;
+import com.example.xbankbackend.services.BankAccountService;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
-
+@Log4j2
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
 public class BankAccountController {
-
-    private final DSLContext dsl = JOOQConfig.createDSLContext();
-
-    public BankAccountController() throws SQLException {
-    }
-
-
+    @Autowired
+    private BankAccountService bankAccountService;
 
     @PostMapping("/create/bankaccount")
     public String createBankAccount(@RequestBody BankAccount bankAccount) {
-//        System.out.println(bankAccount.getAmount());
-
-
-        return bankAccount.getAmount().toString();
+        try {
+            bankAccountService.createBankAccount(bankAccount);
+            log.info(bankAccount);
+        } catch (IllegalArgumentException e) {
+            log.warn(e.getMessage());
+        }
+        return bankAccount.toString();
     }
 }

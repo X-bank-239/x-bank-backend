@@ -18,10 +18,10 @@ public class UserController {
     @PostMapping("/create/user")
     public String newUser(@RequestBody User user) {
         try {
-            System.out.println(user);
+            log.info(user);
             userService.createUser(user);
         } catch (IllegalArgumentException e) {
-            log.info(e.getMessage());
+            log.warn(e.getMessage());
         }
         return user.toString();
     }

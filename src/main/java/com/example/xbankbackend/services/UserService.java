@@ -13,7 +13,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public void createUser(User user) {
-        if (!userRepository.haveEmail(user.getEmail())) {
+        if (userRepository.haveEmail(user.getEmail())) {
             throw new IllegalArgumentException("User with email " + user.getEmail() + " already exists");
         }
         user.setUserId(UUID.randomUUID());
