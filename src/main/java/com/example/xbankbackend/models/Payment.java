@@ -1,5 +1,6 @@
 package com.example.xbankbackend.models;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.sql.Timestamp;
@@ -9,8 +10,14 @@ import java.util.UUID;
 public class Payment {
     private UUID paymentId;
     private UUID senderId;
+
+    @NotNull(message = "receiverId cannot be null")
     private UUID receiverId;
-    private Float Amount;
+
+    @NotNull(message = "amount cannot be null")
+    private Float amount;
+
+    @NotNull(message = "currency cannot be blank")
     private String currency;
-    private Timestamp Date;
+    private Timestamp date;
 }
