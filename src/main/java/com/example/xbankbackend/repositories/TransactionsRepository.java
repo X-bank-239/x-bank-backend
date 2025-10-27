@@ -1,8 +1,8 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.config.JOOQConfig;
-import com.example.xbankbackend.generated.tables.Payments;
-import com.example.xbankbackend.models.Payment;
+import com.example.xbankbackend.generated.tables.Transactions;
+import com.example.xbankbackend.models.Transaction;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
@@ -15,9 +15,9 @@ public class TransactionsRepository {
     public TransactionsRepository() throws SQLException {
     }
 
-    public void addPayment(Payment payment) {
-        dsl.insertInto(Payments.PAYMENTS)
-                .values(payment.getPaymentId(), payment.getSenderId(), payment.getReceiverId(), payment.getAmount(), payment.getCurrency(), payment.getDate())
+    public void addPayment(Transaction transaction) {
+        dsl.insertInto(Transactions.TRANSACTIONS)
+                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getDate())
                 .execute();
     }
 }
