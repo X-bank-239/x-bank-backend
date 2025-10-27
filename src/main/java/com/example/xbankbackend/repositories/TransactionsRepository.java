@@ -17,7 +17,7 @@ public class TransactionsRepository {
 
     public void addPayment(Transaction transaction) {
         dsl.insertInto(Transactions.TRANSACTIONS)
-                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getDate())
+                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getDate(), transaction.getTransactionType())
                 .execute();
     }
 }

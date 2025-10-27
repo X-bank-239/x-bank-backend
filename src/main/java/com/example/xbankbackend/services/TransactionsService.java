@@ -64,10 +64,15 @@ public class TransactionsService {
     private void validateDeposit(Transaction deposit) {
         String currency = deposit.getCurrency();
         UUID receiverId = deposit.getReceiverId();
+        UUID senderId = deposit.getSenderId();
         Float amount = deposit.getAmount();
 
         if (receiverId == null) {
             throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
+        }
+
+        if (senderId != null) {
+            throw new IllegalArgumentException("SenderId must be null (Deposit)");
         }
 
         if (!bankAccountRepository.haveUUID(receiverId)) {
@@ -119,11 +124,16 @@ public class TransactionsService {
     }
 
     private void validatePayment(Transaction payment) {
+        UUID receiverId = payment.getReceiverId();
         UUID senderId = payment.getSenderId();
         Float amount = payment.getAmount();
 
         if (senderId == null) {
             throw new IllegalArgumentException("SenderId cannot be null (Payment)");
+        }
+
+        if (receiverId != null) {
+            throw new IllegalArgumentException("ReceiverId must be null (Payment)");
         }
 
         if (amount > bankAccountRepository.getBalance(senderId)) {
