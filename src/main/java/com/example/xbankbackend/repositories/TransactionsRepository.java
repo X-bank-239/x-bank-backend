@@ -1,18 +1,18 @@
 package com.example.xbankbackend.repositories;
 
-import com.example.xbankbackend.config.JOOQConfig;
 import com.example.xbankbackend.generated.tables.Transactions;
 import com.example.xbankbackend.models.Transaction;
 import org.jooq.DSLContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.sql.SQLException;
 
 @Repository
 public class TransactionsRepository {
-    private final DSLContext dsl = JOOQConfig.createDSLContext();
+    private final DSLContext dsl;
 
-    public TransactionsRepository() throws SQLException {
+    @Autowired
+    public TransactionsRepository(DSLContext dsl) {
+        this.dsl = dsl;
     }
 
     public void addPayment(Transaction transaction) {

@@ -1,20 +1,20 @@
 package com.example.xbankbackend.repositories;
 
-import com.example.xbankbackend.config.JOOQConfig;
 import com.example.xbankbackend.generated.tables.Users;
 import com.example.xbankbackend.models.User;
 import org.jooq.DSLContext;
-import org.jooq.Name;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 @Repository
 public class UserRepository {
-    private final DSLContext dsl = JOOQConfig.createDSLContext();
+    private final DSLContext dsl;
 
-    public UserRepository() throws SQLException {
+    @Autowired
+    public UserRepository(DSLContext dsl) {
+        this.dsl = dsl;
     }
 
     public void createUser(User user) {

@@ -1,11 +1,11 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -21,7 +21,7 @@ public class TransactionsService {
     private BankAccountRepository bankAccountRepository;
 
     public void depositAccount(Transaction deposit) {
-        validateTransaction(deposit);
+        validateDeposit(deposit);
 
         UUID receiverId = deposit.getReceiverId();
         float amount = deposit.getAmount();
@@ -30,11 +30,11 @@ public class TransactionsService {
         deposit.setDate(new Timestamp(new Date().getTime()));
 
         transactionsRepository.addPayment(deposit);
-        bankAccountRepository.changeBalance(receiverId, amount);
+        bankAccountRepository.increaseBalance(receiverId, amount);
     }
 
     public void transferMoney(Transaction transfer) {
-        validateTransaction(transfer);
+        validateTransfer(transfer);
 
         UUID senderId = transfer.getSenderId();
         UUID receiverId = transfer.getReceiverId();
@@ -44,54 +44,94 @@ public class TransactionsService {
         transfer.setDate(new Timestamp(new Date().getTime()));
 
         transactionsRepository.addPayment(transfer);
-        bankAccountRepository.changeBalance(senderId, -amount);
-        bankAccountRepository.changeBalance(receiverId, amount);
+        bankAccountRepository.decreaseBalance(senderId, amount);
+        bankAccountRepository.increaseBalance(receiverId, amount);
     }
 
     public void pay(Transaction payment) {
-        validateTransaction(payment);
+        validatePayment(payment);
 
-        UUID senderId = payment.getReceiverId();
+        UUID senderId = payment.getSenderId();
         float amount = payment.getAmount();
 
         payment.setTransactionId(UUID.randomUUID());
         payment.setDate(new Timestamp(new Date().getTime()));
 
         transactionsRepository.addPayment(payment);
-        bankAccountRepository.changeBalance(senderId, -amount);
+        bankAccountRepository.decreaseBalance(senderId, amount);
     }
 
-    private void validateTransaction(Transaction transaction) {
-        TransactionType transactionType = transaction.getTransactionType();
-        switch (transactionType) {
-            case Deposit:
-                if (transaction.getReceiverId() == null) {
-                    throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
-                }
-                break;
-            case Payment:
-                if (transaction.getSenderId() == null) {
-                    throw new IllegalArgumentException("SenderId cannot be null (Payment)");
-                }
-                break;
-            case Transfer:
-                if (transaction.getSenderId() == null || transaction.getReceiverId() == null) {
-                    throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown transaction type " + transactionType);
+    private void validateDeposit(Transaction deposit) {
+        String currency = deposit.getCurrency();
+        UUID receiverId = deposit.getReceiverId();
+        Float amount = deposit.getAmount();
+
+        if (receiverId == null) {
+            throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
         }
 
-        String currency = transaction.getCurrency();
-        UUID receiverId = transaction.getReceiverId();
         if (!bankAccountRepository.haveUUID(receiverId)) {
             throw new IllegalArgumentException("No such receiver Id " + receiverId);
         }
+
+        if (amount <= 0.0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+
         // TODO: конвертация валют
         String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
         if (!Objects.equals(currency, receiverCurrency)) {
             throw new IllegalArgumentException("Currency " + currency + " doesn't equal " + receiverCurrency);
+        }
+    }
+
+    private void validateTransfer(Transaction transfer) {
+        String currency = transfer.getCurrency();
+        UUID receiverId = transfer.getReceiverId();
+        UUID senderId = transfer.getSenderId();
+        Float amount = transfer.getAmount();
+
+        if (senderId == null || receiverId == null) {
+            throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
+        }
+
+        if (amount > bankAccountRepository.getBalance(senderId)) {
+            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
+        }
+
+        if (!bankAccountRepository.haveUUID(receiverId)) {
+            throw new IllegalArgumentException("No such receiver Id " + receiverId);
+        }
+
+        if (!bankAccountRepository.haveUUID(senderId)) {
+            throw new IllegalArgumentException("No such sender Id " + senderId);
+        }
+
+        if (amount <= 0.0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        // TODO: конвертация валют
+        String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+        if (!Objects.equals(currency, receiverCurrency)) {
+            throw new IllegalArgumentException("Currency " + currency + " doesn't equal " + receiverCurrency);
+        }
+    }
+
+    private void validatePayment(Transaction payment) {
+        UUID senderId = payment.getSenderId();
+        Float amount = payment.getAmount();
+
+        if (senderId == null) {
+            throw new IllegalArgumentException("SenderId cannot be null (Payment)");
+        }
+
+        if (amount > bankAccountRepository.getBalance(senderId)) {
+            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
+        }
+
+        if (amount <= 0.0) {
+            throw new IllegalArgumentException("Amount must be positive");
         }
     }
 }
