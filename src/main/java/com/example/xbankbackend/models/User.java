@@ -15,4 +15,5 @@ public class User {
     @Email
     private String email;
     private Date birthdate;
+    private String password;
 }

@@ -37,4 +37,36 @@ public class UserRepository {
                 .fetch()
                 .size() == 1;
     }
+    
+    public User findByEmail(String email) {
+        return dsl.selectFrom(Users.USERS)
+                .where(Users.USERS.EMAIL.eq(email))
+                .fetchOptional()
+                .map(record -> {
+                    User user = new User();
+                    user.setUserId(record.getUserId());
+                    user.setFirstName(record.getFirstName());
+                    user.setLastName(record.getLastName());
+                    user.setEmail(record.getEmail());
+                    user.setBirthdate(record.getBirthdate());
+                    return user;
+                })
+                .orElse(null);
+    }
+    public User findByID(UUID id) {
+        return dsl.selectFrom(Users.USERS)
+                .where(Users.USERS.USER_ID.eq(id))
+                .fetchOptional()
+                .map(record -> {
+                    User user = new User();
+                    user.setUserId(record.getUserId());
+                    user.setFirstName(record.getFirstName());
+                    user.setLastName(record.getLastName());
+                    user.setEmail(record.getEmail());
+                    user.setBirthdate(record.getBirthdate());
+                    return user;
+                })
+                .orElse(null);
+    }
+
 }
