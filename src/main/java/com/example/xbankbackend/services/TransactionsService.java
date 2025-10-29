@@ -100,16 +100,16 @@ public class TransactionsService {
             throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
         }
 
-        if (amount > bankAccountRepository.getBalance(senderId)) {
-            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
-        }
-
         if (!bankAccountRepository.haveUUID(receiverId)) {
             throw new IllegalArgumentException("No such receiver Id " + receiverId);
         }
 
         if (!bankAccountRepository.haveUUID(senderId)) {
             throw new IllegalArgumentException("No such sender Id " + senderId);
+        }
+
+        if (amount > bankAccountRepository.getBalance(senderId)) {
+            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
         }
 
         if (amount <= 0.0) {
@@ -134,6 +134,10 @@ public class TransactionsService {
 
         if (receiverId != null) {
             throw new IllegalArgumentException("ReceiverId must be null (Payment)");
+        }
+
+        if (!bankAccountRepository.haveUUID(senderId)) {
+            throw new IllegalArgumentException("No such sender Id " + senderId);
         }
 
         if (amount > bankAccountRepository.getBalance(senderId)) {
