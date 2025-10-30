@@ -21,7 +21,7 @@ public class BankAccountService {
         if (!userRepository.haveUUID(bankAccount.getUserId())) {
             throw new IllegalArgumentException("User with UUID " + bankAccount.getAccountId() + " does not exist");
         }
-        bankAccount.setAmount(BigDecimal.ZERO);
+        bankAccount.setBalance(BigDecimal.ZERO);
         bankAccount.setAccountId(UUID.randomUUID());
         bankAccountRepository.createBankAccount(bankAccount);
     }
