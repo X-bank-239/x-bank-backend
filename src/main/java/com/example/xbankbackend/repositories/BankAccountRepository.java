@@ -1,11 +1,13 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.generated.tables.BankAccounts;
+import com.example.xbankbackend.generated.tables.Users;
 import com.example.xbankbackend.models.BankAccount;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -19,7 +21,7 @@ public class BankAccountRepository {
 
     public void createBankAccount(BankAccount bankAccount) {
         dsl.insertInto(BankAccounts.BANK_ACCOUNTS)
-                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getAmount(), bankAccount.getCurrency(), bankAccount.getAccountType())
+                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getBalance(), bankAccount.getCurrency(), bankAccount.getAccountType())
                 .execute();
     }
 
@@ -56,5 +58,14 @@ public class BankAccountRepository {
                 .where(BankAccounts.BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
                 .fetchOne()
                 .getValue(BankAccounts.BANK_ACCOUNTS.BALANCE, Float.class);
+    }
+
+    public List<BankAccount> getBankAccounts(UUID uuid) {
+        return dsl.select()
+                .from(BankAccounts.BANK_ACCOUNTS)
+                .join(Users.USERS).on(BankAccounts.BANK_ACCOUNTS.USER_ID.eq(Users.USERS.USER_ID))
+                .where(Users.USERS.USER_ID.eq(uuid))
+                .fetch()
+                .into(BankAccount.class);
     }
 }

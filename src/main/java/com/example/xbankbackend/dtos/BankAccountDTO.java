@@ -1,17 +1,14 @@
-package com.example.xbankbackend.models;
+package com.example.xbankbackend.dtos;
 
 import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.enums.CurrencyType;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
-public class BankAccount {
-    private UUID accountId;
-    private UUID userId;
-    private BigDecimal balance;
+public class BankAccountDTO {
+    private BigDecimal amount;
     private CurrencyType currency;
     private BankAccountType accountType;
 }

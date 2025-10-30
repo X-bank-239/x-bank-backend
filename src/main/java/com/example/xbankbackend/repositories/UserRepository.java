@@ -6,6 +6,7 @@ import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Repository
@@ -23,8 +24,16 @@ public class UserRepository {
                 .execute();
     }
 
+    public User getUser(UUID uuid) {
+        return Objects.requireNonNull(
+                dsl.selectFrom(Users.USERS)
+                        .where(Users.USERS.USER_ID.eq(uuid))
+                        .fetchOne()
+                )
+                .into(User.class);
+    }
+
     public boolean haveEmail(String email) {
-        System.out.println(dsl.selectFrom(Users.USERS).fetch());
         return dsl.selectFrom(Users.USERS)
                 .where(Users.USERS.EMAIL.eq(email))
                 .fetch()
