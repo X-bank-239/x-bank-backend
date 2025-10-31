@@ -1,11 +1,13 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.exceptions.DifferentCurrencyException;
+import com.example.xbankbackend.exceptions.InsufficientFundsException;
+import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -66,6 +68,11 @@ public class TransactionsService {
         UUID receiverId = deposit.getReceiverId();
         UUID senderId = deposit.getSenderId();
         Float amount = deposit.getAmount();
+        String transactionType = deposit.getTransactionType().toString();
+
+        if (!transactionType.equals("DEPOSIT")) {
+            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Deposit)");
+        }
 
         if (receiverId == null) {
             throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
@@ -76,7 +83,7 @@ public class TransactionsService {
         }
 
         if (!bankAccountRepository.haveUUID(receiverId)) {
-            throw new IllegalArgumentException("No such receiver Id " + receiverId);
+            throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
 
         if (amount <= 0.0) {
@@ -86,7 +93,7 @@ public class TransactionsService {
         // TODO: конвертация валют
         String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
         if (!Objects.equals(currency, receiverCurrency)) {
-            throw new IllegalArgumentException("Currency " + currency + " doesn't equal " + receiverCurrency);
+            throw new DifferentCurrencyException("Currency " + currency + " doesn't equal " + receiverCurrency);
         }
     }
 
@@ -95,21 +102,26 @@ public class TransactionsService {
         UUID receiverId = transfer.getReceiverId();
         UUID senderId = transfer.getSenderId();
         Float amount = transfer.getAmount();
+        String transactionType = transfer.getTransactionType().toString();
+
+        if (!transactionType.equals("TRANSFER")) {
+            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Transfer)");
+        }
 
         if (senderId == null || receiverId == null) {
             throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
         }
 
         if (!bankAccountRepository.haveUUID(receiverId)) {
-            throw new IllegalArgumentException("No such receiver Id " + receiverId);
+            throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
 
         if (!bankAccountRepository.haveUUID(senderId)) {
-            throw new IllegalArgumentException("No such sender Id " + senderId);
+            throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
         if (amount > bankAccountRepository.getBalance(senderId)) {
-            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
+            throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
         if (amount <= 0.0) {
@@ -119,7 +131,7 @@ public class TransactionsService {
         // TODO: конвертация валют
         String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
         if (!Objects.equals(currency, receiverCurrency)) {
-            throw new IllegalArgumentException("Currency " + currency + " doesn't equal " + receiverCurrency);
+            throw new DifferentCurrencyException("Currency " + currency + " doesn't equal " + receiverCurrency);
         }
     }
 
@@ -127,6 +139,11 @@ public class TransactionsService {
         UUID receiverId = payment.getReceiverId();
         UUID senderId = payment.getSenderId();
         Float amount = payment.getAmount();
+        String transactionType = payment.getTransactionType().toString();
+
+        if (!transactionType.equals("PAYMENT")) {
+            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Payment)");
+        }
 
         if (senderId == null) {
             throw new IllegalArgumentException("SenderId cannot be null (Payment)");
@@ -137,11 +154,11 @@ public class TransactionsService {
         }
 
         if (!bankAccountRepository.haveUUID(senderId)) {
-            throw new IllegalArgumentException("No such sender Id " + senderId);
+            throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
         if (amount > bankAccountRepository.getBalance(senderId)) {
-            throw new IllegalArgumentException("Sender balance must be greater than transaction amount");
+            throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
         if (amount <= 0.0) {
