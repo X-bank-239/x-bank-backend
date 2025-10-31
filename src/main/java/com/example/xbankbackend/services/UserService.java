@@ -2,6 +2,8 @@ package com.example.xbankbackend.services;
 
 import com.example.xbankbackend.dtos.BankAccountDTO;
 import com.example.xbankbackend.dtos.UserProfileDTO;
+import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
+import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -22,7 +24,7 @@ public class UserService {
 
     public void createUser(User user) {
         if (userRepository.haveEmail(user.getEmail())) {
-            throw new IllegalArgumentException("User with email " + user.getEmail() + " already exists");
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
         user.setUserId(UUID.randomUUID());
         userRepository.createUser(user);
@@ -30,7 +32,7 @@ public class UserService {
 
     public UserProfileDTO getUser(UUID uuid) {
         if (!userRepository.haveUUID(uuid)) {
-            throw new IllegalArgumentException("User with UUID " + uuid + " doesn't exist");
+            throw new UserNotFoundException("User with UUID " + uuid + " doesn't exist");
         }
         User user = userRepository.getUser(uuid);
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);

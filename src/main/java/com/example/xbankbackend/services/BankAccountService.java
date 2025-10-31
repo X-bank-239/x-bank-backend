@@ -1,5 +1,6 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
@@ -18,7 +19,7 @@ public class BankAccountService {
 
     public void createBankAccount(BankAccount bankAccount) {
         if (!userRepository.haveUUID(bankAccount.getUserId())) {
-            throw new IllegalArgumentException("User with UUID " + bankAccount.getAccountId() + " does not exist");
+            throw new UserNotFoundException("User with UUID " + bankAccount.getUserId() + " does not exist");
         }
         bankAccount.setBalance(0.0f);
         bankAccount.setAccountId(UUID.randomUUID());
