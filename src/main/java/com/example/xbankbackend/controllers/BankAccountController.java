@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 @RestController
 @CrossOrigin
-@RequestMapping("/api")
+@RequestMapping("/api/bankaccount")
 public class BankAccountController {
     @Autowired
     private BankAccountService bankAccountService;
 
-    @PostMapping("/create/bankaccount")
+    @PostMapping("/create")
     public ResponseEntity<?> createBankAccount(@Valid @RequestBody BankAccount bankAccount) {
         log.info("Creating bank account: {}", bankAccount);
         bankAccountService.createBankAccount(bankAccount);
