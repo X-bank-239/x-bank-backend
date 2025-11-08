@@ -4,7 +4,7 @@ import com.example.xbankbackend.enums.TransactionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
@@ -21,5 +21,6 @@ public class Transaction {
 
     @NotNull(message = "currency cannot be blank")
     private String currency;
-    private Timestamp date;
+    private OffsetDateTime transactionDate;
+    private String comment;
 }

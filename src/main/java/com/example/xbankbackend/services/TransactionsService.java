@@ -1,5 +1,7 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.dtos.RecentTransactionsDTO;
+import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.DifferentCurrencyException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
@@ -9,8 +11,7 @@ import com.example.xbankbackend.repositories.TransactionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -29,9 +30,9 @@ public class TransactionsService {
         float amount = deposit.getAmount();
 
         deposit.setTransactionId(UUID.randomUUID());
-        deposit.setDate(new Timestamp(new Date().getTime()));
+        deposit.setTransactionDate(OffsetDateTime.now());
 
-        transactionsRepository.addPayment(deposit);
+        transactionsRepository.addTransaction(deposit);
         bankAccountRepository.increaseBalance(receiverId, amount);
     }
 
@@ -43,9 +44,9 @@ public class TransactionsService {
         float amount = transfer.getAmount();
 
         transfer.setTransactionId(UUID.randomUUID());
-        transfer.setDate(new Timestamp(new Date().getTime()));
+        transfer.setTransactionDate(OffsetDateTime.now());
 
-        transactionsRepository.addPayment(transfer);
+        transactionsRepository.addTransaction(transfer);
         bankAccountRepository.decreaseBalance(senderId, amount);
         bankAccountRepository.increaseBalance(receiverId, amount);
     }
@@ -57,9 +58,9 @@ public class TransactionsService {
         float amount = payment.getAmount();
 
         payment.setTransactionId(UUID.randomUUID());
-        payment.setDate(new Timestamp(new Date().getTime()));
+        payment.setTransactionDate(OffsetDateTime.now());
 
-        transactionsRepository.addPayment(payment);
+        transactionsRepository.addTransaction(payment);
         bankAccountRepository.decreaseBalance(senderId, amount);
     }
 
@@ -164,5 +165,19 @@ public class TransactionsService {
         if (amount <= 0.0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
+    }
+
+    public RecentTransactionsDTO getRecentTransactions(UUID accountId, int page, int size) {
+        if (!bankAccountRepository.haveUUID(accountId)) {
+            throw new BankAccountNotFoundException("Bank account with UUID " + accountId + " doesn't exist");
+        }
+        if (page < 0) {
+            throw new IllegalArgumentException("Page "  + page + " cannot be negative");
+        }
+        if (size < 0) {
+            throw new IllegalArgumentException("Size " + size + " cannot be negative");
+        }
+
+        return transactionsRepository.getTransactions(accountId, page, size);
     }
 }
