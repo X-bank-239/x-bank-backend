@@ -412,7 +412,6 @@ public class TransactionsServiceTest {
     @Test
     void getRecentTransactions_shouldThrowIfBankAccountNotFound() {
         UUID accountId = UUID.randomUUID();
-        int total = 2;
         int page = 1;
         int size = 2;
 
@@ -424,7 +423,6 @@ public class TransactionsServiceTest {
     @Test
     void getRecentTransactions_shouldThrowIfPageIsNegative() {
         UUID accountId = UUID.randomUUID();
-        int total = 2;
         int page = -1;
         int size = 2;
 
@@ -436,15 +434,8 @@ public class TransactionsServiceTest {
     @Test
     void getRecentTransactions_shouldThrowIfSizeIsNegative() {
         UUID accountId = UUID.randomUUID();
-        int total = 2;
         int page = 1;
         int size = -2;
-
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.PAYMENT);
-        transaction.setSenderId(accountId);
-        transaction.setCurrency("RUB");
-        transaction.setAmount(5000.0f);
 
         when(bankAccountRepository.haveUUID(accountId)).thenReturn(true);
 
