@@ -1,6 +1,10 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.dtos.RecentTransactionsDTO;
+import com.example.xbankbackend.dtos.TransactionDTO;
+import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
+import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.DifferentCurrencyException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
@@ -17,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
@@ -401,5 +406,82 @@ public class TransactionsServiceTest {
         transactionsService.pay(transaction);
 
         verify(bankAccountRepository).decreaseBalance(senderId, 5000.0f);
+    }
+
+    // getRecentTransactions
+    @Test
+    void getRecentTransactions_shouldThrowIfBankAccountNotFound() {
+        UUID accountId = UUID.randomUUID();
+        int total = 2;
+        int page = 1;
+        int size = 2;
+
+        when(bankAccountRepository.haveUUID(accountId)).thenReturn(false);
+
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+    }
+
+    @Test
+    void getRecentTransactions_shouldThrowIfPageIsNegative() {
+        UUID accountId = UUID.randomUUID();
+        int total = 2;
+        int page = -1;
+        int size = 2;
+
+        when(bankAccountRepository.haveUUID(accountId)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+    }
+
+    @Test
+    void getRecentTransactions_shouldThrowIfSizeIsNegative() {
+        UUID accountId = UUID.randomUUID();
+        int total = 2;
+        int page = 1;
+        int size = -2;
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TransactionType.PAYMENT);
+        transaction.setSenderId(accountId);
+        transaction.setCurrency("RUB");
+        transaction.setAmount(5000.0f);
+
+        when(bankAccountRepository.haveUUID(accountId)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+    }
+
+    @Test
+    void getRecentTransactions_shouldReturnRecentTransactions() {
+        UUID accountId = UUID.randomUUID();
+        int total = 2;
+        int page = 1;
+        int size = 2;
+
+        TransactionDTO transaction1 = new TransactionDTO();
+        transaction1.setTransactionType(TransactionType.DEPOSIT);
+        transaction1.setReceiverName("Michael L.");
+        transaction1.setCurrency(CurrencyType.RUB);
+        transaction1.setAmount(5000.0f);
+
+        TransactionDTO transaction2 = new TransactionDTO();
+        transaction2.setTransactionType(TransactionType.PAYMENT);
+        transaction2.setSenderName("Michael L.");
+        transaction2.setCurrency(CurrencyType.RUB);
+        transaction2.setAmount(200.0f);
+
+        List<TransactionDTO> transactions = List.of(transaction1, transaction2);
+        RecentTransactionsDTO recentTransactionsDTO = new RecentTransactionsDTO(total, page, size, transactions);
+
+        when(bankAccountRepository.haveUUID(accountId)).thenReturn(true);
+        when(transactionsRepository.getTransactions(accountId, page, size)).thenReturn(recentTransactionsDTO);
+
+        RecentTransactionsDTO result = transactionsService.getRecentTransactions(accountId, page, size);
+
+        assertNotNull(result);
+        assertEquals(recentTransactionsDTO, result);
+
+        verify(bankAccountRepository).haveUUID(accountId);
+        verify(transactionsRepository).getTransactions(accountId, page, size);
     }
 }
