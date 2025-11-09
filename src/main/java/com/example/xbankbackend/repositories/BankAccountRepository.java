@@ -1,5 +1,6 @@
 package com.example.xbankbackend.repositories;
 
+import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.models.BankAccount;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +48,18 @@ public class BankAccountRepository {
                 .size() == 1;
     }
 
-    public String getCurrency(UUID uuid) {
+    public UUID getUser(UUID uuid) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
                 .fetchOne()
-                .getValue(BANK_ACCOUNTS.CURRENCY, String.class);
+                .getValue(BANK_ACCOUNTS.USER_ID);
+    }
+
+    public CurrencyType getCurrency(UUID uuid) {
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .fetchOne()
+                .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
     }
 
     public Float getBalance(UUID uuid) {

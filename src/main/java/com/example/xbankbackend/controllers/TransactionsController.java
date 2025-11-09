@@ -1,5 +1,6 @@
 package com.example.xbankbackend.controllers;
 
+import com.example.xbankbackend.dtos.RecentTransactionsDTO;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.services.TransactionsService;
 import jakarta.validation.Valid;
@@ -7,6 +8,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -35,5 +38,14 @@ public class TransactionsController {
         log.info("Processing payment: {}", payment);
         transactionsService.pay(payment);
         return ResponseEntity.ok(payment);
+    }
+
+    @GetMapping("/get-recent-transactions/{accountId}")
+    public ResponseEntity<RecentTransactionsDTO> getRecentTransactions(@PathVariable UUID accountId,
+                                                                       @RequestParam(defaultValue = "0") int page,
+                                                                       @RequestParam(defaultValue = "5") int size) {
+        log.info("Getting transactions for account {} on page {} of size {}", accountId, page, size);
+        RecentTransactionsDTO recentTransactions = transactionsService.getRecentTransactions(accountId, page, size);
+        return ResponseEntity.ok(recentTransactions);
     }
 }
