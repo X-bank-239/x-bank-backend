@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -41,7 +40,7 @@ public class TransactionsService {
         deposit.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(deposit);
-        bankAccountRepository.increaseBalance(receiverId, amount);
+        bankAccountRepository.increaseBalanceByAccountId(receiverId, amount);
     }
 
     public void transferMoney(Transaction transfer) {
@@ -55,8 +54,8 @@ public class TransactionsService {
         transfer.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(transfer);
-        bankAccountRepository.decreaseBalance(senderId, amount);
-        bankAccountRepository.increaseBalance(receiverId, amount);
+        bankAccountRepository.decreaseBalanceByAccountId(senderId, amount);
+        bankAccountRepository.increaseBalanceByAccountId(receiverId, amount);
     }
 
     public void pay(Transaction payment) {
@@ -69,7 +68,7 @@ public class TransactionsService {
         payment.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(payment);
-        bankAccountRepository.decreaseBalance(senderId, amount);
+        bankAccountRepository.decreaseBalanceByAccountId(senderId, amount);
     }
 
     private void validateDeposit(Transaction deposit) {
@@ -91,7 +90,7 @@ public class TransactionsService {
             throw new IllegalArgumentException("SenderId must be null (Deposit)");
         }
 
-        if (!bankAccountRepository.haveUUID(receiverId)) {
+        if (!bankAccountRepository.haveAccountId(receiverId)) {
             throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
 
@@ -100,7 +99,7 @@ public class TransactionsService {
         }
 
         // TODO: конвертация валют
-        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrencyByAccountId(receiverId);
         if (currency != receiverCurrency) {
             throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency);
         }
@@ -121,15 +120,15 @@ public class TransactionsService {
             throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
         }
 
-        if (!bankAccountRepository.haveUUID(receiverId)) {
+        if (!bankAccountRepository.haveAccountId(receiverId)) {
             throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
 
-        if (!bankAccountRepository.haveUUID(senderId)) {
+        if (!bankAccountRepository.haveAccountId(senderId)) {
             throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
-        if (amount > bankAccountRepository.getBalance(senderId)) {
+        if (amount > bankAccountRepository.getBalanceByAccountId(senderId)) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
@@ -138,7 +137,7 @@ public class TransactionsService {
         }
 
         // TODO: конвертация валют
-        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrencyByAccountId(receiverId);
         if (currency != receiverCurrency) {
             throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency.toString());
         }
@@ -162,11 +161,11 @@ public class TransactionsService {
             throw new IllegalArgumentException("ReceiverId must be null (Payment)");
         }
 
-        if (!bankAccountRepository.haveUUID(senderId)) {
+        if (!bankAccountRepository.haveAccountId(senderId)) {
             throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
-        if (amount > bankAccountRepository.getBalance(senderId)) {
+        if (amount > bankAccountRepository.getBalanceByAccountId(senderId)) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
@@ -176,7 +175,7 @@ public class TransactionsService {
     }
 
     public RecentTransactionsDTO getRecentTransactions(UUID accountId, int page, int size) {
-        if (!bankAccountRepository.haveUUID(accountId)) {
+        if (!bankAccountRepository.haveAccountId(accountId)) {
             throw new BankAccountNotFoundException("Bank account with UUID " + accountId + " doesn't exist");
         }
         if (page < 0) {
@@ -186,7 +185,7 @@ public class TransactionsService {
             throw new IllegalArgumentException("Size " + size + " cannot be negative");
         }
 
-        List<Transaction> transactions = transactionsRepository.getTransactions(accountId, page, size);
+        List<Transaction> transactions = transactionsRepository.getTransactionsByAccountId(accountId, page, size);
 
         List<TransactionDTO> transactionDTOS = new java.util.ArrayList<>(List.of());
 
@@ -194,15 +193,14 @@ public class TransactionsService {
             // TODO: оптимизировать
             UUID senderId = transaction.getSenderId();
             UUID receiverId = transaction.getReceiverId();
-            System.out.println(senderId + " " + receiverId);
             String senderName = null, receiverName = null;
             if (senderId != null) {
-                UUID senderIdUser = bankAccountRepository.getUser(senderId);
-                senderName = userRepository.getUser(senderIdUser).getFirstName();
+                UUID senderIdUser = bankAccountRepository.getUserIdByAccountId(senderId);
+                senderName = userRepository.getUserByUserId(senderIdUser).getFirstName();
             }
             if (receiverId != null) {
-                UUID receiverIdUser = bankAccountRepository.getUser(receiverId);
-                receiverName = userRepository.getUser(receiverIdUser).getFirstName();
+                UUID receiverIdUser = bankAccountRepository.getUserIdByAccountId(receiverId);
+                receiverName = userRepository.getUserByUserId(receiverIdUser).getFirstName();
             }
 
             TransactionDTO currentDTO = new TransactionDTO();
@@ -217,7 +215,7 @@ public class TransactionsService {
             transactionDTOS.add(currentDTO);
         }
 
-        int total = transactionsRepository.getTransactionsCount(accountId);
+        int total = transactionsRepository.getTransactionsCountByAccountId(accountId);
 
         return new RecentTransactionsDTO(total, page, size, transactionDTOS);
     }

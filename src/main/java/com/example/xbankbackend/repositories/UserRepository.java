@@ -5,7 +5,6 @@ import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.USERS;
@@ -25,12 +24,10 @@ public class UserRepository {
                 .execute();
     }
 
-    public User getUser(UUID uuid) {
-        return Objects.requireNonNull(
-                dsl.selectFrom(USERS)
-                        .where(USERS.USER_ID.eq(uuid))
-                        .fetchOne()
-                )
+    public User getUserByUserId(UUID userId) {
+        return dsl.selectFrom(USERS)
+                .where(USERS.USER_ID.eq(userId))
+                .fetchOne()
                 .into(User.class);
     }
 
@@ -41,9 +38,9 @@ public class UserRepository {
                 .size() == 1;
     }
 
-    public boolean haveUUID(UUID uuid) {
+    public boolean haveUserId(UUID userId) {
         return dsl.selectFrom(USERS)
-                .where(USERS.USER_ID.eq(uuid))
+                .where(USERS.USER_ID.eq(userId))
                 .fetch()
                 .size() == 1;
     }

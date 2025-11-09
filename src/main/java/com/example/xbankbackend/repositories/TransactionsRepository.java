@@ -1,7 +1,5 @@
 package com.example.xbankbackend.repositories;
 
-import com.example.xbankbackend.dtos.RecentTransactionsDTO;
-import com.example.xbankbackend.dtos.TransactionDTO;
 import com.example.xbankbackend.models.Transaction;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,7 @@ public class TransactionsRepository {
                 .execute();
     }
 
-    public List<Transaction> getTransactions(UUID accountId, int page, int size) {
+    public List<Transaction> getTransactionsByAccountId(UUID accountId, int page, int size) {
         int offset = page * size;
 
         return dsl.select()
@@ -39,7 +37,7 @@ public class TransactionsRepository {
                 .fetchInto(Transaction.class);
     }
 
-    public Integer getTransactionsCount(UUID accountId) {
+    public Integer getTransactionsCountByAccountId(UUID accountId) {
         return dsl.select()
                 .from(TRANSACTIONS)
                 .where(TRANSACTIONS.SENDER_ID.eq(accountId)).or(TRANSACTIONS.RECEIVER_ID.eq(accountId))
