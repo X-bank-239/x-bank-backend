@@ -32,11 +32,11 @@ public class UserService {
     }
 
     public UserProfileDTO getUser(UUID uuid) {
-        if (!userRepository.haveUUID(uuid)) {
+        if (!userRepository.haveUserId(uuid)) {
             throw new UserNotFoundException("User with UUID " + uuid + " doesn't exist");
         }
-        User user = userRepository.getUser(uuid);
-        List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
+        User user = userRepository.getUserByUserId(uuid);
+        List<BankAccount> accounts = bankAccountRepository.getBankAccountsByAccountId(uuid);
 
         UserProfileDTO userProfileDTO = new UserProfileDTO();
         userProfileDTO.setFirstName(user.getFirstName());

@@ -27,53 +27,53 @@ public class BankAccountRepository {
                 .execute();
     }
 
-    public void increaseBalance(UUID uuid, float amount) {
+    public void increaseBalanceByAccountId(UUID accountId, float amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.add(amount))
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .execute();
     }
 
-    public void decreaseBalance(UUID uuid, float amount) {
+    public void decreaseBalanceByAccountId(UUID accountId, float amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.subtract(amount))
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .execute();
     }
 
-    public boolean haveUUID(UUID uuid) {
+    public boolean haveAccountId(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetch()
                 .size() == 1;
     }
 
-    public UUID getUser(UUID uuid) {
+    public UUID getUserIdByAccountId(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.USER_ID);
     }
 
-    public CurrencyType getCurrency(UUID uuid) {
+    public CurrencyType getCurrencyByAccountId(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
     }
 
-    public Float getBalance(UUID uuid) {
+    public Float getBalanceByAccountId(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
-                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(uuid))
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.BALANCE, Float.class);
     }
 
-    public List<BankAccount> getBankAccounts(UUID uuid) {
+    public List<BankAccount> getBankAccountsByAccountId(UUID accountId) {
         return dsl.select()
                 .from(BANK_ACCOUNTS)
                 .join(USERS).on(BANK_ACCOUNTS.USER_ID.eq(USERS.USER_ID))
-                .where(USERS.USER_ID.eq(uuid))
+                .where(USERS.USER_ID.eq(accountId))
                 .fetch()
                 .into(BankAccount.class);
     }

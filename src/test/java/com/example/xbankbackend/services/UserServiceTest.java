@@ -75,7 +75,7 @@ public class UserServiceTest {
         verify(userRepository).createUser(user);
     }
 
-    // getUser
+    // getUserIdByAccountId
     @Test
     void getUser_shouldThrowIfUserNotFound() {
         UUID userId = UUID.randomUUID();
@@ -91,7 +91,7 @@ public class UserServiceTest {
         user.setEmail(email);
         user.setBirthdate(birthdate);
 
-        when(userRepository.haveUUID(userId)).thenReturn(false);
+        when(userRepository.haveUserId(userId)).thenReturn(false);
 
         assertThrows(UserNotFoundException.class, () -> userService.getUser(userId));
     }
@@ -123,9 +123,9 @@ public class UserServiceTest {
 
         List<BankAccount> bankAccounts = List.of(account1, account2);
 
-        when(userRepository.haveUUID(userId)).thenReturn(true);
-        when(userRepository.getUser(userId)).thenReturn(user);
-        when(bankAccountRepository.getBankAccounts(userId)).thenReturn(bankAccounts);
+        when(userRepository.haveUserId(userId)).thenReturn(true);
+        when(userRepository.getUserByUserId(userId)).thenReturn(user);
+        when(bankAccountRepository.getBankAccountsByAccountId(userId)).thenReturn(bankAccounts);
 
         UserProfileDTO userProfileDTO = userService.getUser(userId);
 

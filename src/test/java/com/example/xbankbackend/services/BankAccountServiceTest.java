@@ -40,7 +40,7 @@ public class BankAccountServiceTest {
         bankAccount.setCurrency(currency);
         bankAccount.setAccountType(accountType);
 
-        when(userRepository.haveUUID(userId)).thenReturn(false);
+        when(userRepository.haveUserId(userId)).thenReturn(false);
 
         assertThrows(UserNotFoundException.class, () -> bankAccountService.createBankAccount(bankAccount));
     }
@@ -56,7 +56,7 @@ public class BankAccountServiceTest {
         bankAccount.setCurrency(currency);
         bankAccount.setAccountType(accountType);
 
-        when(userRepository.haveUUID(userId)).thenReturn(true);
+        when(userRepository.haveUserId(userId)).thenReturn(true);
 
         bankAccountService.createBankAccount(bankAccount);
 

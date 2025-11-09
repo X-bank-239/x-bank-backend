@@ -18,7 +18,7 @@ public class BankAccountService {
     private UserRepository userRepository;
 
     public void createBankAccount(BankAccount bankAccount) {
-        if (!userRepository.haveUUID(bankAccount.getUserId())) {
+        if (!userRepository.haveUserId(bankAccount.getUserId())) {
             throw new UserNotFoundException("User with UUID " + bankAccount.getUserId() + " does not exist");
         }
         bankAccount.setBalance(0.0f);
