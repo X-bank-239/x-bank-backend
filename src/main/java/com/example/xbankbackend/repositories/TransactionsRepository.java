@@ -27,19 +27,23 @@ public class TransactionsRepository {
                 .execute();
     }
 
-    public RecentTransactionsDTO getTransactions(UUID accountId, int page, int size) {
+    public List<Transaction> getTransactions(UUID accountId, int page, int size) {
         int offset = page * size;
 
-        List<TransactionDTO> transactionDTOS = dsl.select()
+        return dsl.select()
                 .from(TRANSACTIONS)
                 .where(TRANSACTIONS.SENDER_ID.eq(accountId)).or(TRANSACTIONS.RECEIVER_ID.eq(accountId))
                 .orderBy(TRANSACTIONS.TRANSACTION_DATE.desc())
                 .limit(size)
                 .offset(offset)
-                .fetchInto(TransactionDTO.class);
+                .fetchInto(Transaction.class);
+    }
 
-        int total = transactionDTOS.size();
-
-        return new RecentTransactionsDTO(total, page, size, transactionDTOS);
+    public Integer getTransactionsCount(UUID accountId) {
+        return dsl.select()
+                .from(TRANSACTIONS)
+                .where(TRANSACTIONS.SENDER_ID.eq(accountId)).or(TRANSACTIONS.RECEIVER_ID.eq(accountId))
+                .fetch()
+                .size();
     }
 }

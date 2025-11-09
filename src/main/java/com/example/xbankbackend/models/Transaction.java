@@ -1,5 +1,6 @@
 package com.example.xbankbackend.models;
 
+import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class Transaction {
     private Float amount;
 
     @NotNull(message = "currency cannot be blank")
-    private String currency;
+    private CurrencyType currency;
     private OffsetDateTime transactionDate;
     private String comment;
 }

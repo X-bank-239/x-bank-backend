@@ -1,6 +1,9 @@
 package com.example.xbankbackend.services;
 
 import com.example.xbankbackend.dtos.RecentTransactionsDTO;
+import com.example.xbankbackend.dtos.TransactionDTO;
+import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.DifferentCurrencyException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
@@ -8,10 +11,12 @@ import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
+import com.example.xbankbackend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,6 +27,9 @@ public class TransactionsService {
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public void depositAccount(Transaction deposit) {
         validateDeposit(deposit);
@@ -65,14 +73,14 @@ public class TransactionsService {
     }
 
     private void validateDeposit(Transaction deposit) {
-        String currency = deposit.getCurrency();
+        CurrencyType currency = deposit.getCurrency();
         UUID receiverId = deposit.getReceiverId();
         UUID senderId = deposit.getSenderId();
         Float amount = deposit.getAmount();
-        String transactionType = deposit.getTransactionType().toString();
+        TransactionType transactionType = deposit.getTransactionType();
 
-        if (!transactionType.equals("DEPOSIT")) {
-            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Deposit)");
+        if (transactionType != TransactionType.DEPOSIT) {
+            throw new IllegalArgumentException("Method name " + transactionType.toString() + " is not allowed (Deposit)");
         }
 
         if (receiverId == null) {
@@ -92,20 +100,20 @@ public class TransactionsService {
         }
 
         // TODO: конвертация валют
-        String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
-        if (!Objects.equals(currency, receiverCurrency)) {
-            throw new DifferentCurrencyException("Currency " + currency + " doesn't equal " + receiverCurrency);
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+        if (currency != receiverCurrency) {
+            throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency);
         }
     }
 
     private void validateTransfer(Transaction transfer) {
-        String currency = transfer.getCurrency();
+        CurrencyType currency = transfer.getCurrency();
         UUID receiverId = transfer.getReceiverId();
         UUID senderId = transfer.getSenderId();
         Float amount = transfer.getAmount();
-        String transactionType = transfer.getTransactionType().toString();
+        TransactionType transactionType = transfer.getTransactionType();
 
-        if (!transactionType.equals("TRANSFER")) {
+        if (transactionType != TransactionType.TRANSFER) {
             throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Transfer)");
         }
 
@@ -130,9 +138,9 @@ public class TransactionsService {
         }
 
         // TODO: конвертация валют
-        String receiverCurrency = bankAccountRepository.getCurrency(receiverId);
-        if (!Objects.equals(currency, receiverCurrency)) {
-            throw new DifferentCurrencyException("Currency " + currency + " doesn't equal " + receiverCurrency);
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+        if (currency != receiverCurrency) {
+            throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency.toString());
         }
     }
 
@@ -140,9 +148,9 @@ public class TransactionsService {
         UUID receiverId = payment.getReceiverId();
         UUID senderId = payment.getSenderId();
         Float amount = payment.getAmount();
-        String transactionType = payment.getTransactionType().toString();
+        TransactionType transactionType = payment.getTransactionType();
 
-        if (!transactionType.equals("PAYMENT")) {
+        if (transactionType != TransactionType.PAYMENT) {
             throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Payment)");
         }
 
@@ -178,6 +186,39 @@ public class TransactionsService {
             throw new IllegalArgumentException("Size " + size + " cannot be negative");
         }
 
-        return transactionsRepository.getTransactions(accountId, page, size);
+        List<Transaction> transactions = transactionsRepository.getTransactions(accountId, page, size);
+
+        List<TransactionDTO> transactionDTOS = new java.util.ArrayList<>(List.of());
+
+        for (Transaction transaction : transactions) {
+            // TODO: оптимизировать
+            UUID senderId = transaction.getSenderId();
+            UUID receiverId = transaction.getReceiverId();
+            System.out.println(senderId + " " + receiverId);
+            String senderName = null, receiverName = null;
+            if (senderId != null) {
+                UUID senderIdUser = bankAccountRepository.getUser(senderId);
+                senderName = userRepository.getUser(senderIdUser).getFirstName();
+            }
+            if (receiverId != null) {
+                UUID receiverIdUser = bankAccountRepository.getUser(receiverId);
+                receiverName = userRepository.getUser(receiverIdUser).getFirstName();
+            }
+
+            TransactionDTO currentDTO = new TransactionDTO();
+            currentDTO.setTransactionType(transaction.getTransactionType());
+            currentDTO.setSenderName(senderName);
+            currentDTO.setReceiverName(receiverName);
+            currentDTO.setAmount(transaction.getAmount());
+            currentDTO.setCurrency(transaction.getCurrency());
+            currentDTO.setTransactionDate(transaction.getTransactionDate());
+            currentDTO.setComment(transaction.getComment());
+
+            transactionDTOS.add(currentDTO);
+        }
+
+        int total = transactionsRepository.getTransactionsCount(accountId);
+
+        return new RecentTransactionsDTO(total, page, size, transactionDTOS);
     }
 }
