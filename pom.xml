@@ -61,6 +61,10 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
 		<!--	WEB		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -149,6 +153,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
+<!--	COMMENT FROM HERE		-->
 			<plugin>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
@@ -186,6 +191,16 @@
 							<directory>src/main/java/</directory>
 						</target>
 					</generator>
+				</configuration>
+			</plugin>
+<!--	TO HERE		-->
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<configuration>
+					<url>jdbc:postgresql://localhost:5432/postgres</url>
+					<user>postgres</user>
+					<password>mysecretpassword</password>
 				</configuration>
 			</plugin>
 		</plugins>
