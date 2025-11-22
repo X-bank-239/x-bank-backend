@@ -14,7 +14,7 @@ services:
     networks:
       - route
       - internal
-      -
+
   db:
     container_name: db
     image: postgres:17-alpine
