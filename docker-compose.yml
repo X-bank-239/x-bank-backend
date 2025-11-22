@@ -1,17 +1,20 @@
 services:
-  app:
+  backend:
     build: .
     ports:
       - "8080:8080"
     environment:
       - DEFAULT_LOGIN=yar
       - DEFAULT_PASSWORD=galem
-      - DATASOURCE_URL=jdbc:postgresql://my-postgres.orb.local:5432/postgres
+      - DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
     depends_on:
-        db:
-          condition: service_healthy
+      db:
+        condition: service_healthy
+    profiles: ["app"]
     networks:
       - route
+      - internal
+      -
   db:
     container_name: db
     image: postgres:17-alpine
@@ -19,17 +22,16 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_:/var/lib/postgresql/data
     networks:
       - internal
-    healthcheck: # Важно добавить проверку здоровья
+    healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
+
 volumes:
   postgres_:
 networks:

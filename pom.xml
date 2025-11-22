@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-		<db.url>jdbc:postgresql://my-postgres.orb.local:5432/postgres</db.url>
+		<db.url>jdbc:postgresql://db:5432/postgres</db.url>
 		<db.username>postgres</db.username>
 		<db.password>mysecretpassword</db.password>
 	</properties>
