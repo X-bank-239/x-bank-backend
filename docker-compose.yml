@@ -24,6 +24,8 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
     volumes:
       - postgres_:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - internal
     healthcheck:
