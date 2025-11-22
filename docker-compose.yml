@@ -6,13 +6,14 @@ services:
     environment:
       - DEFAULT_LOGIN=yar
       - DEFAULT_PASSWORD=galem
-      - DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
-
-      - FLYWAY_BASELINE_ON_MIGRATE=true
+      - DATASOURCE_URL=jdbc:postgresql://my-postgres.orb.local:5432/postgres
     depends_on:
-      - db
-
+        db:
+          condition: service_healthy
+    networks:
+      - route
   db:
+    container_name: db
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: postgres
@@ -22,6 +23,18 @@ services:
       - "5432:5432"
     volumes:
       - postgres_:/var/lib/postgresql/data
-
+    networks:
+      - internal
+    healthcheck: # Важно добавить проверку здоровья
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 volumes:
   postgres_:
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  route:
+    external: true
