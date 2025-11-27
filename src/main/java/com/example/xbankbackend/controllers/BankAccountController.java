@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 @RestController
 @CrossOrigin
-@RequestMapping("/api/bankaccount")
+@RequestMapping("/bankaccount")
 public class BankAccountController {
     @Autowired
     private BankAccountService bankAccountService;

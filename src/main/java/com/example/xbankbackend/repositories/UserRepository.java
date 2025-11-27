@@ -1,22 +1,19 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.models.User;
+import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.USERS;
 
+@AllArgsConstructor
 @Repository
 public class UserRepository {
-    private final DSLContext dsl;
 
-    @Autowired
-    public UserRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
+    private final DSLContext dsl;
 
     public void createUser(User user) {
         dsl.insertInto(USERS)

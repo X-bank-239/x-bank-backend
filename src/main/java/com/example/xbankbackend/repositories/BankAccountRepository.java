@@ -2,8 +2,8 @@ package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.models.BankAccount;
+import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,14 +12,11 @@ import java.util.UUID;
 import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
 import static com.example.xbankbackend.generated.Tables.USERS;
 
+@AllArgsConstructor
 @Repository
 public class BankAccountRepository {
-    private final DSLContext dsl;
 
-    @Autowired
-    public BankAccountRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
+    private final DSLContext dsl;
 
     public void createBankAccount(BankAccount bankAccount) {
         dsl.insertInto(BANK_ACCOUNTS)

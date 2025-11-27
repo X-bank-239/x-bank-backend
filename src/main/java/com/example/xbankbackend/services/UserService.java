@@ -9,18 +9,17 @@ import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
+    private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
 
     public void createUser(@Valid User user) {

@@ -12,22 +12,19 @@ import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Service
 public class TransactionsService {
-    @Autowired
+
     private TransactionsRepository transactionsRepository;
-
-    @Autowired
     private BankAccountRepository bankAccountRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     public void depositAccount(Transaction deposit) {

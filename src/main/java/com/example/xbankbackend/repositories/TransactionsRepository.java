@@ -1,8 +1,8 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.models.Transaction;
+import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,14 +10,11 @@ import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.TRANSACTIONS;
 
+@AllArgsConstructor
 @Repository
 public class TransactionsRepository {
-    private final DSLContext dsl;
 
-    @Autowired
-    public TransactionsRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
+    private final DSLContext dsl;
 
     public void addTransaction(Transaction transaction) {
         dsl.insertInto(TRANSACTIONS)

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Log4j2
 @RestController
 @CrossOrigin
-@RequestMapping("/api/transactions")
+@RequestMapping("/transactions")
 public class TransactionsController {
     @Autowired
     private TransactionsService transactionsService;

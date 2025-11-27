@@ -16,7 +16,7 @@ import java.util.UUID;
 @Log4j2
 @RestController
 @CrossOrigin
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
