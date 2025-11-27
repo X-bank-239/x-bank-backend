@@ -22,20 +22,20 @@ public class UserService {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
 
-    public void createUser(@Valid User user) {
-        if (userRepository.haveEmail(user.getEmail())) {
+    public void create(@Valid User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
         user.setUserId(UUID.randomUUID());
-        userRepository.createUser(user);
+        userRepository.create(user);
     }
 
-    public UserProfileDTO getUser(UUID uuid) {
-        if (!userRepository.haveUserId(uuid)) {
+    public UserProfileDTO getProfile(UUID uuid) {
+        if (!userRepository.exists(uuid)) {
             throw new UserNotFoundException("User with UUID " + uuid + " doesn't exist");
         }
-        User user = userRepository.getUserByUserId(uuid);
-        List<BankAccount> accounts = bankAccountRepository.getBankAccountsByAccountId(uuid);
+        User user = userRepository.getUser(uuid);
+        List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
 
         UserProfileDTO userProfileDTO = new UserProfileDTO();
         userProfileDTO.setFirstName(user.getFirstName());

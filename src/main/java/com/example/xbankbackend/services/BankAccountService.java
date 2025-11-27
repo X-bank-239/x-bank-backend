@@ -16,12 +16,12 @@ public class BankAccountService {
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
 
-    public void createBankAccount(BankAccount bankAccount) {
-        if (!userRepository.haveUserId(bankAccount.getUserId())) {
+    public void create(BankAccount bankAccount) {
+        if (!userRepository.exists(bankAccount.getUserId())) {
             throw new UserNotFoundException("User with UUID " + bankAccount.getUserId() + " does not exist");
         }
         bankAccount.setBalance(0.0f);
         bankAccount.setAccountId(UUID.randomUUID());
-        bankAccountRepository.createBankAccount(bankAccount);
+        bankAccountRepository.create(bankAccount);
     }
 }

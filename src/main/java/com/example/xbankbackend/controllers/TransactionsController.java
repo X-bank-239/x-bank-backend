@@ -22,14 +22,14 @@ public class TransactionsController {
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@Valid @RequestBody Transaction deposit) {
         log.info("Processing deposit: {}", deposit);
-        transactionsService.depositAccount(deposit);
+        transactionsService.deposit(deposit);
         return ResponseEntity.ok(deposit);
     }
 
     @PostMapping("/transfer")
     public ResponseEntity<?> transfer(@Valid @RequestBody Transaction transfer) {
         log.info("Processing transfer: {}", transfer);
-        transactionsService.transferMoney(transfer);
+        transactionsService.transfer(transfer);
         return ResponseEntity.ok(transfer);
     }
 
@@ -40,12 +40,12 @@ public class TransactionsController {
         return ResponseEntity.ok(payment);
     }
 
-    @GetMapping("/get-recent-transactions/{accountId}")
-    public ResponseEntity<RecentTransactionsDTO> getRecentTransactions(@PathVariable UUID accountId,
-                                                                       @RequestParam(defaultValue = "0") int page,
-                                                                       @RequestParam(defaultValue = "5") int size) {
+    @GetMapping("/getProfile-recent-transactions/{accountId}")
+    public ResponseEntity<RecentTransactionsDTO> getRecent(@PathVariable UUID accountId,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "5") int size) {
         log.info("Getting transactions for account {} on page {} of size {}", accountId, page, size);
-        RecentTransactionsDTO recentTransactions = transactionsService.getRecentTransactions(accountId, page, size);
+        RecentTransactionsDTO recentTransactions = transactionsService.getRecent(accountId, page, size);
         return ResponseEntity.ok(recentTransactions);
     }
 }

@@ -52,7 +52,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -92,9 +92,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(false);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(UserNotFoundException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -107,9 +107,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(-5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -122,10 +122,10 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.USD);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.getCurrencyByAccountId(receiverId)).thenReturn(CurrencyType.RUB);
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
+        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
 
-        assertThrows(DifferentCurrencyException.class, () -> transactionsService.depositAccount(transaction));
+        assertThrows(DifferentCurrencyException.class, () -> transactionsService.deposit(transaction));
     }
 
     @Test
@@ -138,12 +138,12 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.getCurrencyByAccountId(receiverId)).thenReturn(CurrencyType.RUB);
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
+        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
 
-        transactionsService.depositAccount(transaction);
+        transactionsService.deposit(transaction);
 
-        verify(bankAccountRepository).increaseBalanceByAccountId(receiverId, 5000.0f);
+        verify(bankAccountRepository).increaseBalance(receiverId, 5000.0f);
     }
 
     // validateTransfer
@@ -159,7 +159,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -189,7 +189,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -204,9 +204,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(false);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -221,10 +221,10 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(false);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -239,11 +239,11 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(4000.0f);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(4000.0f);
 
-        assertThrows(InsufficientFundsException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -258,11 +258,11 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(-5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(6000.0f);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -277,12 +277,12 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.USD);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(6000.0f);
-        when(bankAccountRepository.getCurrencyByAccountId(receiverId)).thenReturn(CurrencyType.RUB);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
+        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
 
-        assertThrows(DifferentCurrencyException.class, () -> transactionsService.transferMoney(transaction));
+        assertThrows(DifferentCurrencyException.class, () -> transactionsService.transfer(transaction));
     }
 
     @Test
@@ -297,15 +297,15 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(receiverId)).thenReturn(true);
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(6000.0f);
-        when(bankAccountRepository.getCurrencyByAccountId(receiverId)).thenReturn(CurrencyType.RUB);
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
+        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
 
-        transactionsService.transferMoney(transaction);
+        transactionsService.transfer(transaction);
 
-        verify(bankAccountRepository).increaseBalanceByAccountId(receiverId, 5000.0f);
-        verify(bankAccountRepository).decreaseBalanceByAccountId(senderId, 5000.0f);
+        verify(bankAccountRepository).increaseBalance(receiverId, 5000.0f);
+        verify(bankAccountRepository).decreaseBalance(senderId, 5000.0f);
     }
 
     // validatePayment
@@ -359,7 +359,7 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(false);
+        when(bankAccountRepository.exists(senderId)).thenReturn(false);
 
         assertThrows(UserNotFoundException.class, () -> transactionsService.pay(transaction));
     }
@@ -374,8 +374,8 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(4000.0f);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(4000.0f);
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction));
     }
@@ -390,8 +390,8 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(-5000.0f);
 
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(6000.0f);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
     }
@@ -406,50 +406,50 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(5000.0f);
 
-        when(bankAccountRepository.haveAccountId(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalanceByAccountId(senderId)).thenReturn(6000.0f);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
 
         transactionsService.pay(transaction);
 
-        verify(bankAccountRepository).decreaseBalanceByAccountId(senderId, 5000.0f);
+        verify(bankAccountRepository).decreaseBalance(senderId, 5000.0f);
     }
 
-    // getRecentTransactions
+    // getRecent
     @Test
-    void getRecentTransactions_shouldThrowIfBankAccountNotFound() {
+    void getRecent_shouldThrowIfBankAccountNotFound() {
         UUID accountId = UUID.randomUUID();
         int page = 1;
         int size = 2;
 
-        when(bankAccountRepository.haveAccountId(accountId)).thenReturn(false);
+        when(bankAccountRepository.exists(accountId)).thenReturn(false);
 
-        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.getRecent(accountId, page, size));
     }
 
     @Test
-    void getRecentTransactions_shouldThrowIfPageIsNegative() {
+    void getRecent_shouldThrowIfPageIsNegative() {
         UUID accountId = UUID.randomUUID();
         int page = -1;
         int size = 2;
 
-        when(bankAccountRepository.haveAccountId(accountId)).thenReturn(true);
+        when(bankAccountRepository.exists(accountId)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecent(accountId, page, size));
     }
 
     @Test
-    void getRecentTransactions_shouldThrowIfSizeIsNegative() {
+    void getRecent_shouldThrowIfSizeIsNegative() {
         UUID accountId = UUID.randomUUID();
         int page = 1;
         int size = -2;
 
-        when(bankAccountRepository.haveAccountId(accountId)).thenReturn(true);
+        when(bankAccountRepository.exists(accountId)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecentTransactions(accountId, page, size));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.getRecent(accountId, page, size));
     }
 
     @Test
-    void getRecentTransactions_shouldReturnRecentTransactions() {
+    void getRecentTransactions_shouldReturnRecent() {
         UUID accountId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         int total = 2;
@@ -491,18 +491,18 @@ public class TransactionsServiceTest {
         List<TransactionDTO> transactionDTOS = List.of(transactionDTO1, transactionDTO2);
         RecentTransactionsDTO recentTransactionsDTO = new RecentTransactionsDTO(total, page, size, transactionDTOS);
 
-        when(bankAccountRepository.haveAccountId(accountId)).thenReturn(true);
-        when(bankAccountRepository.getUserIdByAccountId(accountId)).thenReturn(userId);
-        when(transactionsRepository.getTransactionsByAccountId(accountId, page, size)).thenReturn(transactions);
-        when(transactionsRepository.getTransactionsCountByAccountId(accountId)).thenReturn(total);
-        when(userRepository.getUserByUserId(userId)).thenReturn(user);
+        when(bankAccountRepository.exists(accountId)).thenReturn(true);
+        when(bankAccountRepository.getUserId(accountId)).thenReturn(userId);
+        when(transactionsRepository.getTransactions(accountId, page, size)).thenReturn(transactions);
+        when(transactionsRepository.getTransactionsCount(accountId)).thenReturn(total);
+        when(userRepository.getUser(userId)).thenReturn(user);
 
-        RecentTransactionsDTO result = transactionsService.getRecentTransactions(accountId, page, size);
+        RecentTransactionsDTO result = transactionsService.getRecent(accountId, page, size);
 
         assertNotNull(result);
         assertEquals(recentTransactionsDTO, result);
 
-        verify(bankAccountRepository).haveAccountId(accountId);
-        verify(transactionsRepository).getTransactionsByAccountId(accountId, page, size);
+        verify(bankAccountRepository).exists(accountId);
+        verify(transactionsRepository).getTransactions(accountId, page, size);
     }
 }

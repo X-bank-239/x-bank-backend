@@ -18,55 +18,55 @@ public class BankAccountRepository {
 
     private final DSLContext dsl;
 
-    public void createBankAccount(BankAccount bankAccount) {
+    public void create(BankAccount bankAccount) {
         dsl.insertInto(BANK_ACCOUNTS)
                 .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getBalance(), bankAccount.getCurrency(), bankAccount.getAccountType())
                 .execute();
     }
 
-    public void increaseBalanceByAccountId(UUID accountId, float amount) {
+    public void increaseBalance(UUID accountId, float amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.add(amount))
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .execute();
     }
 
-    public void decreaseBalanceByAccountId(UUID accountId, float amount) {
+    public void decreaseBalance(UUID accountId, float amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.subtract(amount))
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .execute();
     }
 
-    public boolean haveAccountId(UUID accountId) {
+    public boolean exists(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetch()
                 .size() == 1;
     }
 
-    public UUID getUserIdByAccountId(UUID accountId) {
+    public UUID getUserId(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.USER_ID);
     }
 
-    public CurrencyType getCurrencyByAccountId(UUID accountId) {
+    public CurrencyType getCurrency(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
     }
 
-    public Float getBalanceByAccountId(UUID accountId) {
+    public Float getBalance(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.BALANCE, Float.class);
     }
 
-    public List<BankAccount> getBankAccountsByAccountId(UUID accountId) {
+    public List<BankAccount> getBankAccounts(UUID accountId) {
         return dsl.select()
                 .from(BANK_ACCOUNTS)
                 .join(USERS).on(BANK_ACCOUNTS.USER_ID.eq(USERS.USER_ID))

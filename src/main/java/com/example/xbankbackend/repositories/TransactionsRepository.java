@@ -22,7 +22,7 @@ public class TransactionsRepository {
                 .execute();
     }
 
-    public List<Transaction> getTransactionsByAccountId(UUID accountId, int page, int size) {
+    public List<Transaction> getTransactions(UUID accountId, int page, int size) {
         int offset = page * size;
 
         return dsl.select()
@@ -34,7 +34,7 @@ public class TransactionsRepository {
                 .fetchInto(Transaction.class);
     }
 
-    public Integer getTransactionsCountByAccountId(UUID accountId) {
+    public Integer getTransactionsCount(UUID accountId) {
         return dsl.select()
                 .from(TRANSACTIONS)
                 .where(TRANSACTIONS.SENDER_ID.eq(accountId)).or(TRANSACTIONS.RECEIVER_ID.eq(accountId))

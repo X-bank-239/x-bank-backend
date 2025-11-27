@@ -25,16 +25,16 @@ public class UserController {
     private ObjectMapper objectMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<?> newUser(@Valid @RequestBody User user) {
+    public ResponseEntity<?> create(@Valid @RequestBody User user) {
         log.info("Creating user: {}", user);
-        userService.createUser(user);
+        userService.create(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @GetMapping("/get/{userId}")
-    public ResponseEntity<UserProfileDTO> getUserData(@PathVariable UUID userId) {
+    @GetMapping("/getProfile/{userId}")
+    public ResponseEntity<UserProfileDTO> getProfile(@PathVariable UUID userId) {
         log.info("Getting user: {}", userId);
-        UserProfileDTO userProfile = userService.getUser(userId);
+        UserProfileDTO userProfile = userService.getProfile(userId);
         return ResponseEntity.ok(userProfile);
     }
 }

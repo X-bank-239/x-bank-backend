@@ -34,9 +34,9 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    // createUser
+    // create
     @Test
-    void createUser_shouldThrowIfEmailAlreadyExists() {
+    void create_shouldThrowIfEmailAlreadyExists() {
         String firstName = "Test";
         String lastName = "User";
         String email = "test@xbank.ru";
@@ -48,9 +48,9 @@ public class UserServiceTest {
         user.setEmail(email);
         user.setBirthdate(birthdate);
 
-        when(userRepository.haveEmail(email)).thenReturn(true);
+        when(userRepository.existsByEmail(email)).thenReturn(true);
 
-        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(user));
+        assertThrows(UserAlreadyExistsException.class, () -> userService.create(user));
     }
 
     @Test
@@ -66,18 +66,18 @@ public class UserServiceTest {
         user.setEmail(email);
         user.setBirthdate(birthdate);
 
-        when(userRepository.haveEmail(email)).thenReturn(false);
+        when(userRepository.existsByEmail(email)).thenReturn(false);
 
-        userService.createUser(user);
+        userService.create(user);
 
         assertNotNull(user.getUserId());
 
-        verify(userRepository).createUser(user);
+        verify(userRepository).create(user);
     }
 
-    // getUserIdByAccountId
+    // getUserId
     @Test
-    void getUser_shouldThrowIfUserNotFound() {
+    void getProfileUser_shouldThrowIfUserNotFound() {
         UUID userId = UUID.randomUUID();
         String firstName = "Test";
         String lastName = "User";
@@ -91,13 +91,13 @@ public class UserServiceTest {
         user.setEmail(email);
         user.setBirthdate(birthdate);
 
-        when(userRepository.haveUserId(userId)).thenReturn(false);
+        when(userRepository.exists(userId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUser(userId));
+        assertThrows(UserNotFoundException.class, () -> userService.getProfile(userId));
     }
 
     @Test
-    void getUser_shouldGetUserProfileDTO() {
+    void getUser_shouldGetProfileUserProfileDTO() {
         UUID userId = UUID.randomUUID();
         String firstName = "Test";
         String lastName = "User";
@@ -123,11 +123,11 @@ public class UserServiceTest {
 
         List<BankAccount> bankAccounts = List.of(account1, account2);
 
-        when(userRepository.haveUserId(userId)).thenReturn(true);
-        when(userRepository.getUserByUserId(userId)).thenReturn(user);
-        when(bankAccountRepository.getBankAccountsByAccountId(userId)).thenReturn(bankAccounts);
+        when(userRepository.exists(userId)).thenReturn(true);
+        when(userRepository.getUser(userId)).thenReturn(user);
+        when(bankAccountRepository.getBankAccounts(userId)).thenReturn(bankAccounts);
 
-        UserProfileDTO userProfileDTO = userService.getUser(userId);
+        UserProfileDTO userProfileDTO = userService.getProfile(userId);
 
         assertEquals(firstName, userProfileDTO.getFirstName());
         assertEquals(lastName, userProfileDTO.getLastName());
