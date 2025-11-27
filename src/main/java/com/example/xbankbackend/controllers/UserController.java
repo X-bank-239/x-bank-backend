@@ -31,7 +31,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @GetMapping("/getProfile/{userId}")
+    @GetMapping("/get-profile/{userId}")
     public ResponseEntity<UserProfileDTO> getProfile(@PathVariable UUID userId) {
         log.info("Getting user: {}", userId);
         UserProfileDTO userProfile = userService.getProfile(userId);
