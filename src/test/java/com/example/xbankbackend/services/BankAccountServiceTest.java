@@ -30,7 +30,7 @@ public class BankAccountServiceTest {
     private BankAccountService bankAccountService;
 
     @Test
-    void createBankAccount_shouldThrowIfUserNotFound() {
+    void create_shouldThrowIfUserNotFound() {
         UUID userId = UUID.randomUUID();
         CurrencyType currency = CurrencyType.RUB;
         BankAccountType accountType = BankAccountType.CREDIT;
@@ -40,9 +40,9 @@ public class BankAccountServiceTest {
         bankAccount.setCurrency(currency);
         bankAccount.setAccountType(accountType);
 
-        when(userRepository.haveUserId(userId)).thenReturn(false);
+        when(userRepository.exists(userId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> bankAccountService.createBankAccount(bankAccount));
+        assertThrows(UserNotFoundException.class, () -> bankAccountService.create(bankAccount));
     }
 
     @Test
@@ -56,13 +56,13 @@ public class BankAccountServiceTest {
         bankAccount.setCurrency(currency);
         bankAccount.setAccountType(accountType);
 
-        when(userRepository.haveUserId(userId)).thenReturn(true);
+        when(userRepository.exists(userId)).thenReturn(true);
 
-        bankAccountService.createBankAccount(bankAccount);
+        bankAccountService.create(bankAccount);
 
         assertEquals(0.0f, bankAccount.getBalance());
         assertNotNull(bankAccount.getAccountId());
 
-        verify(bankAccountRepository).createBankAccount(bankAccount);
+        verify(bankAccountRepository).create(bankAccount);
     }
 }
