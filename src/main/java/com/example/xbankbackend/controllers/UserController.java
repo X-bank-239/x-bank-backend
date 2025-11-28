@@ -1,6 +1,6 @@
 package com.example.xbankbackend.controllers;
 
-import com.example.xbankbackend.dtos.UserProfileDTO;
+import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.services.UserService;
 import jakarta.validation.Valid;
@@ -29,9 +29,9 @@ public class UserController {
     }
 
     @GetMapping("/get-profile/{userId}")
-    public ResponseEntity<UserProfileDTO> getProfile(@PathVariable UUID userId) {
+    public ResponseEntity<UserProfileResponse> getProfile(@PathVariable UUID userId) {
         log.info("Getting user: {}", userId);
-        UserProfileDTO userProfile = userService.getProfile(userId);
+        UserProfileResponse userProfile = userService.getProfile(userId);
         return ResponseEntity.ok(userProfile);
     }
 }

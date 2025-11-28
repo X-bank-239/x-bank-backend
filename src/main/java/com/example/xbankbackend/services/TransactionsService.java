@@ -1,7 +1,7 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.dtos.RecentTransactionsDTO;
-import com.example.xbankbackend.dtos.TransactionDTO;
+import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
+import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
@@ -171,7 +171,7 @@ public class TransactionsService {
         }
     }
 
-    public RecentTransactionsDTO getRecent(UUID accountId, int page, int size) {
+    public RecentTransactionsResponse getRecent(UUID accountId, int page, int size) {
         if (!bankAccountRepository.exists(accountId)) {
             throw new BankAccountNotFoundException("Bank account with UUID " + accountId + " doesn't exist");
         }
@@ -184,7 +184,7 @@ public class TransactionsService {
 
         List<Transaction> transactions = transactionsRepository.getTransactions(accountId, page, size);
 
-        List<TransactionDTO> transactionDTOS = new java.util.ArrayList<>(List.of());
+        List<TransactionResponse> transactionResponses = new java.util.ArrayList<>(List.of());
 
         for (Transaction transaction : transactions) {
             // TODO: оптимизировать
@@ -200,7 +200,7 @@ public class TransactionsService {
                 receiverName = userRepository.getUser(receiverIdUser).getFirstName();
             }
 
-            TransactionDTO currentDTO = new TransactionDTO();
+            TransactionResponse currentDTO = new TransactionResponse();
             currentDTO.setTransactionType(transaction.getTransactionType());
             currentDTO.setSenderName(senderName);
             currentDTO.setReceiverName(receiverName);
@@ -209,11 +209,11 @@ public class TransactionsService {
             currentDTO.setTransactionDate(transaction.getTransactionDate());
             currentDTO.setComment(transaction.getComment());
 
-            transactionDTOS.add(currentDTO);
+            transactionResponses.add(currentDTO);
         }
 
         int total = transactionsRepository.getTransactionsCount(accountId);
 
-        return new RecentTransactionsDTO(total, page, size, transactionDTOS);
+        return new RecentTransactionsResponse(total, page, size, transactionResponses);
     }
 }

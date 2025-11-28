@@ -1,6 +1,6 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.dtos.UserProfileDTO;
+import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
@@ -127,21 +127,21 @@ public class UserServiceTest {
         when(userRepository.getUser(userId)).thenReturn(user);
         when(bankAccountRepository.getBankAccounts(userId)).thenReturn(bankAccounts);
 
-        UserProfileDTO userProfileDTO = userService.getProfile(userId);
+        UserProfileResponse userProfileResponse = userService.getProfile(userId);
 
-        assertEquals(firstName, userProfileDTO.getFirstName());
-        assertEquals(lastName, userProfileDTO.getLastName());
-        assertEquals(email, userProfileDTO.getEmail());
-        assertEquals(birthdate, userProfileDTO.getBirthdate());
+        assertEquals(firstName, userProfileResponse.getFirstName());
+        assertEquals(lastName, userProfileResponse.getLastName());
+        assertEquals(email, userProfileResponse.getEmail());
+        assertEquals(birthdate, userProfileResponse.getBirthdate());
 
-        assertEquals(2, userProfileDTO.getAccounts().size());
+        assertEquals(2, userProfileResponse.getAccounts().size());
 
-        assertEquals(100.0f, userProfileDTO.getAccounts().get(0).getAmount());
-        assertEquals(CurrencyType.RUB, userProfileDTO.getAccounts().get(0).getCurrency());
-        assertEquals(BankAccountType.CREDIT, userProfileDTO.getAccounts().get(0).getAccountType());
+        assertEquals(100.0f, userProfileResponse.getAccounts().get(0).getAmount());
+        assertEquals(CurrencyType.RUB, userProfileResponse.getAccounts().get(0).getCurrency());
+        assertEquals(BankAccountType.CREDIT, userProfileResponse.getAccounts().get(0).getAccountType());
 
-        assertEquals(5000.0f, userProfileDTO.getAccounts().get(1).getAmount());
-        assertEquals(CurrencyType.CNY, userProfileDTO.getAccounts().get(1).getCurrency());
-        assertEquals(BankAccountType.DEBIT, userProfileDTO.getAccounts().get(1).getAccountType());
+        assertEquals(5000.0f, userProfileResponse.getAccounts().get(1).getAmount());
+        assertEquals(CurrencyType.CNY, userProfileResponse.getAccounts().get(1).getCurrency());
+        assertEquals(BankAccountType.DEBIT, userProfileResponse.getAccounts().get(1).getAccountType());
     }
 }

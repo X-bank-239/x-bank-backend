@@ -1,7 +1,7 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.dtos.RecentTransactionsDTO;
-import com.example.xbankbackend.dtos.TransactionDTO;
+import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
+import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
@@ -475,21 +475,21 @@ public class TransactionsServiceTest {
         transaction2.setAmount(200.0f);
         transaction2.setSenderId(accountId);
 
-        TransactionDTO transactionDTO1 = new TransactionDTO();
-        transactionDTO1.setTransactionType(TransactionType.DEPOSIT);
-        transactionDTO1.setCurrency(CurrencyType.RUB);
-        transactionDTO1.setAmount(5000.0f);
-        transactionDTO1.setReceiverName("Test");
+        TransactionResponse transactionResponse1 = new TransactionResponse();
+        transactionResponse1.setTransactionType(TransactionType.DEPOSIT);
+        transactionResponse1.setCurrency(CurrencyType.RUB);
+        transactionResponse1.setAmount(5000.0f);
+        transactionResponse1.setReceiverName("Test");
 
-        TransactionDTO transactionDTO2 = new TransactionDTO();
-        transactionDTO2.setTransactionType(TransactionType.PAYMENT);
-        transactionDTO2.setCurrency(CurrencyType.RUB);
-        transactionDTO2.setAmount(200.0f);
-        transactionDTO2.setSenderName("Test");
+        TransactionResponse transactionResponse2 = new TransactionResponse();
+        transactionResponse2.setTransactionType(TransactionType.PAYMENT);
+        transactionResponse2.setCurrency(CurrencyType.RUB);
+        transactionResponse2.setAmount(200.0f);
+        transactionResponse2.setSenderName("Test");
 
         List<Transaction> transactions = List.of(transaction1, transaction2);
-        List<TransactionDTO> transactionDTOS = List.of(transactionDTO1, transactionDTO2);
-        RecentTransactionsDTO recentTransactionsDTO = new RecentTransactionsDTO(total, page, size, transactionDTOS);
+        List<TransactionResponse> transactionResponses = List.of(transactionResponse1, transactionResponse2);
+        RecentTransactionsResponse recentTransactionsResponse = new RecentTransactionsResponse(total, page, size, transactionResponses);
 
         when(bankAccountRepository.exists(accountId)).thenReturn(true);
         when(bankAccountRepository.getUserId(accountId)).thenReturn(userId);
@@ -497,10 +497,10 @@ public class TransactionsServiceTest {
         when(transactionsRepository.getTransactionsCount(accountId)).thenReturn(total);
         when(userRepository.getUser(userId)).thenReturn(user);
 
-        RecentTransactionsDTO result = transactionsService.getRecent(accountId, page, size);
+        RecentTransactionsResponse result = transactionsService.getRecent(accountId, page, size);
 
         assertNotNull(result);
-        assertEquals(recentTransactionsDTO, result);
+        assertEquals(recentTransactionsResponse, result);
 
         verify(bankAccountRepository).exists(accountId);
         verify(transactionsRepository).getTransactions(accountId, page, size);

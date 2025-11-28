@@ -1,6 +1,6 @@
 package com.example.xbankbackend.controllers;
 
-import com.example.xbankbackend.dtos.RecentTransactionsDTO;
+import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.services.TransactionsService;
 import jakarta.validation.Valid;
@@ -42,11 +42,11 @@ public class TransactionsController {
     }
 
     @GetMapping("/getProfile-recent-transactions/{accountId}")
-    public ResponseEntity<RecentTransactionsDTO> getRecent(@PathVariable UUID accountId,
-                                                           @RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "5") int size) {
+    public ResponseEntity<RecentTransactionsResponse> getRecent(@PathVariable UUID accountId,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "5") int size) {
         log.info("Getting transactions for account {} on page {} of size {}", accountId, page, size);
-        RecentTransactionsDTO recentTransactions = transactionsService.getRecent(accountId, page, size);
+        RecentTransactionsResponse recentTransactions = transactionsService.getRecent(accountId, page, size);
         return ResponseEntity.ok(recentTransactions);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.xbankbackend.dtos;
+package com.example.xbankbackend.dtos.responses;
 
 import lombok.Data;
 
@@ -6,11 +6,11 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class UserProfileDTO {
+public class UserProfileResponse {
     private String firstName;
     private String lastName;
     private String email;
     private Date birthdate;
 
-    private List<BankAccountDTO> accounts;
+    private List<BankAccountResponse> accounts;
 }

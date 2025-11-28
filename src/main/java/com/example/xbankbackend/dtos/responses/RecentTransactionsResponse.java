@@ -1,4 +1,4 @@
-package com.example.xbankbackend.dtos;
+package com.example.xbankbackend.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,9 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class RecentTransactionsDTO {
+public class RecentTransactionsResponse {
     private Integer total;
     private Integer page;
     private Integer size;
-    private List<TransactionDTO> transactions;
+    private List<TransactionResponse> transactions;
 }

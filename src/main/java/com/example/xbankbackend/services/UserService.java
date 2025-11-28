@@ -1,7 +1,7 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.dtos.BankAccountDTO;
-import com.example.xbankbackend.dtos.UserProfileDTO;
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
+import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.BankAccount;
@@ -30,31 +30,31 @@ public class UserService {
         userRepository.create(user);
     }
 
-    public UserProfileDTO getProfile(UUID uuid) {
+    public UserProfileResponse getProfile(UUID uuid) {
         if (!userRepository.exists(uuid)) {
             throw new UserNotFoundException("User with UUID " + uuid + " doesn't exist");
         }
         User user = userRepository.getUser(uuid);
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
 
-        UserProfileDTO userProfileDTO = new UserProfileDTO();
-        userProfileDTO.setFirstName(user.getFirstName());
-        userProfileDTO.setLastName(user.getLastName());
-        userProfileDTO.setEmail(user.getEmail());
-        userProfileDTO.setBirthdate(user.getBirthdate());
+        UserProfileResponse userProfileResponse = new UserProfileResponse();
+        userProfileResponse.setFirstName(user.getFirstName());
+        userProfileResponse.setLastName(user.getLastName());
+        userProfileResponse.setEmail(user.getEmail());
+        userProfileResponse.setBirthdate(user.getBirthdate());
 
-        List<BankAccountDTO> accountDTOS = accounts.stream().map(
+        List<BankAccountResponse> accountDTOS = accounts.stream().map(
                 bankAccount -> {
-                    BankAccountDTO bankAccountDTO = new BankAccountDTO();
-                    bankAccountDTO.setAmount(bankAccount.getBalance());
-                    bankAccountDTO.setCurrency(bankAccount.getCurrency());
-                    bankAccountDTO.setAccountType(bankAccount.getAccountType());
-                    return bankAccountDTO;
+                    BankAccountResponse bankAccountResponse = new BankAccountResponse();
+                    bankAccountResponse.setAmount(bankAccount.getBalance());
+                    bankAccountResponse.setCurrency(bankAccount.getCurrency());
+                    bankAccountResponse.setAccountType(bankAccount.getAccountType());
+                    return bankAccountResponse;
                 }
         ).toList();
 
-        userProfileDTO.setAccounts(accountDTOS);
+        userProfileResponse.setAccounts(accountDTOS);
 
-        return userProfileDTO;
+        return userProfileResponse;
     }
 }
