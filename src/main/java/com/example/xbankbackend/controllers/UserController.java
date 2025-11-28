@@ -3,26 +3,23 @@ package com.example.xbankbackend.controllers;
 import com.example.xbankbackend.dtos.UserProfileDTO;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.services.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@AllArgsConstructor
 @Log4j2
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
     private UserService userService;
-
-    private ObjectMapper objectMapper;
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@Valid @RequestBody User user) {
