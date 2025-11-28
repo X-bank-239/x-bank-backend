@@ -1,5 +1,6 @@
 package com.example.xbankbackend.controllers;
 
+import com.example.xbankbackend.dtos.requests.CreateBankAccountRequest;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.services.BankAccountService;
 import jakarta.validation.Valid;
@@ -19,9 +20,21 @@ public class BankAccountController {
     private BankAccountService bankAccountService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@Valid @RequestBody BankAccount bankAccount) {
-        log.info("Creating bank account: {}", bankAccount);
+    public ResponseEntity<BankAccount> create(@Valid @RequestBody CreateBankAccountRequest bankAccountRequest) {
+        log.info("Creating bank account: {}", bankAccountRequest);
+
+        BankAccount bankAccount = convertRequest(bankAccountRequest);
         bankAccountService.create(bankAccount);
         return ResponseEntity.status(HttpStatus.CREATED).body(bankAccount);
+    }
+
+    private BankAccount convertRequest(CreateBankAccountRequest bankAccountRequest) {
+        BankAccount bankAccount = new BankAccount();
+
+        bankAccount.setUserId(bankAccountRequest.getUserId());
+        bankAccount.setCurrency(bankAccountRequest.getCurrency());
+        bankAccount.setAccountType(bankAccountRequest.getAccountType());
+
+        return bankAccount;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.xbankbackend.controllers;
 
+import com.example.xbankbackend.dtos.requests.CreateUserRequest;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.services.UserService;
@@ -22,8 +23,10 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@Valid @RequestBody User user) {
-        log.info("Creating user: {}", user);
+    public ResponseEntity<User> create(@Valid @RequestBody CreateUserRequest userRequest) {
+        log.info("Creating user: {}", userRequest);
+
+        User user = convertRequest(userRequest);
         userService.create(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
@@ -33,5 +36,16 @@ public class UserController {
         log.info("Getting user: {}", userId);
         UserProfileResponse userProfile = userService.getProfile(userId);
         return ResponseEntity.ok(userProfile);
+    }
+
+    private User convertRequest(CreateUserRequest userRequest) {
+        User user = new User();
+
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
+        user.setEmail(userRequest.getEmail());
+        user.setBirthdate(userRequest.getBirthdate());
+
+        return user;
     }
 }

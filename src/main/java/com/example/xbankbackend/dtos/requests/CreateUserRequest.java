@@ -1,16 +1,13 @@
-package com.example.xbankbackend.models;
+package com.example.xbankbackend.dtos.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
-public class User {
-
-    private UUID userId;
+public class CreateUserRequest {
 
     @NotNull(message = "first name cannot be null")
     private String firstName;
