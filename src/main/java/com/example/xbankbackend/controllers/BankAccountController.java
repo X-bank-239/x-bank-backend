@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Log4j2
 @CrossOrigin
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/bank-account")
 public class BankAccountController {
 
@@ -24,6 +26,7 @@ public class BankAccountController {
 
     @PostMapping("/create")
     public ResponseEntity<BankAccount> create(@Valid @RequestBody CreateBankAccountRequest bankAccountRequest) {
+
         log.info("Creating bank account: {}", bankAccountRequest);
 
         BankAccount bankAccount = bankAccountMapper.requestToAccount(bankAccountRequest);

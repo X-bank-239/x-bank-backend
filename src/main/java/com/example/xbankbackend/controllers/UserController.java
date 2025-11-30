@@ -19,18 +19,18 @@ import java.util.UUID;
 @Log4j2
 @CrossOrigin
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/user")
 public class UserController {
 
     private UserService userService;
-
     private UserMapper userMapper;
 
     @PostMapping("/create")
     public ResponseEntity<User> create( @RequestBody CreateUserRequest userRequest) {
         log.info("Creating user: {}", userRequest);
         User user = userMapper.requestToAccount(userRequest);
+        user.setUserId(UUID.randomUUID());
         User createdUser = userService.create(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
