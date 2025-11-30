@@ -41,16 +41,19 @@ public class UserServiceTest {
         String lastName = "User";
         String email = "test@xbank.ru";
         Date birthdate = new Date();
+        UUID userId = UUID.randomUUID();
 
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEmail(email);
         user.setBirthdate(birthdate);
+        user.setUserId(userId);
 
-        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(userRepository.existsByEmail(email)).thenReturn(false);
 
         assertThrows(UserAlreadyExistsException.class, () -> userService.create(user));
+        verify(userRepository).create(user);
     }
 
     @Test
@@ -59,14 +62,21 @@ public class UserServiceTest {
         String lastName = "User";
         String email = "test@xbank.ru";
         Date birthdate = new Date();
+        UUID userId = UUID.randomUUID();
 
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEmail(email);
         user.setBirthdate(birthdate);
+        user.setUserId(userId);
 
-        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+        
+
+
+
 
         userService.create(user);
 
