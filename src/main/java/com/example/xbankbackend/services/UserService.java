@@ -25,11 +25,11 @@ public class UserService {
     private BankAccountRepository bankAccountRepository;
 
     public User create(@Valid User user) {
-        Optional<User> createdUser = userRepository.create(user);
-        if (userRepository.existsByEmail(user.getEmail()) && !createdUser.isPresent()) {
+        userRepository.create(user);
+        if (!userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
-        return createdUser.get();
+        return userRepository.getUser(user.getUserId());
     }
 
     public UserProfileResponse getProfile(UUID uuid) {

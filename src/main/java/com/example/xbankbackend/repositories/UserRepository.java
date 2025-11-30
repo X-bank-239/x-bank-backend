@@ -17,11 +17,11 @@ public class UserRepository {
 
     private final DSLContext dsl;
 
-    public Optional<User> create(User user) {
+    public void create(User user) {
             dsl.insertInto(USERS)
                 .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate())
                 .execute();
-            return Optional.ofNullable(this.getUser(user.getUserId()));
+
     }
 
     public User getUser(UUID userId) {
