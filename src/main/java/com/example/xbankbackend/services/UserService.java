@@ -12,9 +12,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -24,12 +22,12 @@ public class UserService {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
 
-    public User create(@Valid User user) {
-        Optional<User> createdUser = userRepository.create(user);
-        if (userRepository.existsByEmail(user.getEmail()) && !createdUser.isPresent()) {
+    public void create(@Valid User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
-        return createdUser.get();
+        user.setUserId(UUID.randomUUID());
+        userRepository.create(user);
     }
 
     public UserProfileResponse getProfile(UUID uuid) {
