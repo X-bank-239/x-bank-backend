@@ -2,6 +2,8 @@ package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateTransactionRequest;
 import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
+import com.example.xbankbackend.mappers.TransactionMapper;
+import com.example.xbankbackend.mappers.UserMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.services.TransactionsService;
 import jakarta.validation.Valid;
@@ -20,12 +22,12 @@ import java.util.UUID;
 public class TransactionsController {
 
     private TransactionsService transactionsService;
-
+    private TransactionMapper transactionMapper;
     @PostMapping("/deposit")
     public ResponseEntity<Transaction> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing deposit: {}", transactionRequest);
 
-        Transaction deposit = convertRequest(transactionRequest);
+        Transaction deposit = transactionMapper.requestToTransaction(transactionRequest);
         transactionsService.deposit(deposit);
         return ResponseEntity.ok(deposit);
     }
@@ -34,7 +36,7 @@ public class TransactionsController {
     public ResponseEntity<Transaction> transfer(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing transfer: {}", transactionRequest);
 
-        Transaction transfer = convertRequest(transactionRequest);
+        Transaction transfer = transactionMapper.requestToTransaction(transactionRequest);
         transactionsService.transfer(transfer);
         return ResponseEntity.ok(transfer);
     }
@@ -43,7 +45,7 @@ public class TransactionsController {
     public ResponseEntity<Transaction> payment(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing payment: {}", transactionRequest);
 
-        Transaction payment = convertRequest(transactionRequest);
+        Transaction payment = transactionMapper.requestToTransaction(transactionRequest);
         transactionsService.pay(payment);
         return ResponseEntity.ok(payment);
     }
@@ -55,18 +57,5 @@ public class TransactionsController {
         log.info("Getting transactions for account {} on page {} of size {}", accountId, page, size);
         RecentTransactionsResponse recentTransactions = transactionsService.getRecent(accountId, page, size);
         return ResponseEntity.ok(recentTransactions);
-    }
-
-    private Transaction convertRequest(CreateTransactionRequest transactionRequest) {
-        Transaction transaction = new Transaction();
-
-        transaction.setTransactionType(transactionRequest.getTransactionType());
-        transaction.setAmount(transactionRequest.getAmount());
-        transaction.setCurrency(transactionRequest.getCurrency());
-        transaction.setSenderId(transactionRequest.getSenderId());
-        transaction.setReceiverId(transactionRequest.getReceiverId());
-        transaction.setComment(transactionRequest.getComment());
-
-        return transaction;
     }
 }
