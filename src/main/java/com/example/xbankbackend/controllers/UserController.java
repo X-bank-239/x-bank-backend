@@ -27,7 +27,6 @@ public class UserController {
     public ResponseEntity<User> create(@RequestBody CreateUserRequest userRequest) {
         log.info("Creating user: {}", userRequest);
         User user = userMapper.requestToAccount(userRequest);
-        user.setUserId(UUID.randomUUID());
         User createdUser = userService.create(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
