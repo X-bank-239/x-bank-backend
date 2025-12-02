@@ -22,15 +22,15 @@ public class UserService {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
 
-    public void create(@Valid User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
+    public User create(@Valid User user) {
+        userRepository.create(user);
+        if (!userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
-        user.setUserId(UUID.randomUUID());
-        userRepository.create(user);
+        return userRepository.getUser(user.getUserId());
     }
 
-    public UserProfileResponse getProfile(UUID uuid) {
+        public UserProfileResponse getProfile(UUID uuid) {
         if (!userRepository.exists(uuid)) {
             throw new UserNotFoundException("User with UUID " + uuid + " doesn't exist");
         }
