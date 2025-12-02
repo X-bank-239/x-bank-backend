@@ -2,15 +2,13 @@ package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.models.User;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.USERS;
-@Log4j2
+
 @AllArgsConstructor
 @Repository
 public class UserRepository {
