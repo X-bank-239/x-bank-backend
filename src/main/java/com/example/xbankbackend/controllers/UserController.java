@@ -37,4 +37,11 @@ public class UserController {
         UserProfileResponse userProfile = userService.getProfile(userId);
         return ResponseEntity.ok(userProfile);
     }
+
+    @GetMapping("/get-profile/email/{email}")
+    public ResponseEntity<UserProfileResponse> getProfileByEmail(@PathVariable String email) {
+        log.info("Getting user: {}", email);
+        UserProfileResponse userProfile = userService.getProfileByEmail(email);
+        return ResponseEntity.ok(userProfile);
+    }
 }
