@@ -4,6 +4,7 @@ import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
+import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
@@ -94,6 +95,44 @@ public class UserServiceTest {
         when(userRepository.exists(userId)).thenReturn(false);
 
         assertThrows(UserNotFoundException.class, () -> userService.getProfile(userId));
+    }
+
+    @Test
+    void getProfileUserByEmail_shouldThrowIfUserNotFound() {
+        UUID userId = UUID.randomUUID();
+        String firstName = "Test";
+        String lastName = "User";
+        String email = "test@xbank.ru";
+        Date birthdate = new Date();
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setBirthdate(birthdate);
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        assertThrows(UserNotFoundException.class, () -> userService.getProfileByEmail(email));
+    }
+
+    @Test
+    void getProfileUserByEmail_shouldThrowIfEmailIsIncorrect() {
+        UUID userId = UUID.randomUUID();
+        String firstName = "Test";
+        String lastName = "User";
+        String email = "testxbank.ru";
+        Date birthdate = new Date();
+
+        User user = new User();
+        user.setUserId(userId);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setBirthdate(birthdate);
+
+        assertThrows(UserGivesIncorrectEmail.class, () -> userService.getProfileByEmail(email));
     }
 
     @Test
