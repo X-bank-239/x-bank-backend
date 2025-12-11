@@ -5,6 +5,7 @@ import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
+import com.example.xbankbackend.mappers.UserProfileMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -24,6 +25,7 @@ public class UserService {
 
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
+    private UserProfileMapper userProfileMapper;
 
     public User create(@Valid User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -41,23 +43,21 @@ public class UserService {
         User user = userRepository.getUser(uuid);
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
 
-        UserProfileResponse userProfileResponse = new UserProfileResponse();
-        userProfileResponse.setFirstName(user.getFirstName());
-        userProfileResponse.setLastName(user.getLastName());
-        userProfileResponse.setEmail(user.getEmail());
-        userProfileResponse.setBirthdate(user.getBirthdate());
-
-        List<BankAccountResponse> accountDTOS = accounts.stream().map(
-                bankAccount -> {
-                    BankAccountResponse bankAccountResponse = new BankAccountResponse();
-                    bankAccountResponse.setAmount(bankAccount.getBalance());
-                    bankAccountResponse.setCurrency(bankAccount.getCurrency());
-                    bankAccountResponse.setAccountType(bankAccount.getAccountType());
-                    return bankAccountResponse;
-                }
-        ).toList();
-
-        userProfileResponse.setAccounts(accountDTOS);
+        UserProfileResponse userProfileResponse = new UserProfileResponse().builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .birthdate(user.getBirthdate())
+                .accounts(accounts.stream().map(
+                        bankAccount -> {
+                            BankAccountResponse bankAccountResponse = new BankAccountResponse();
+                            bankAccountResponse.setAmount(bankAccount.getBalance());
+                            bankAccountResponse.setCurrency(bankAccount.getCurrency());
+                            bankAccountResponse.setAccountType(bankAccount.getAccountType());
+                            return bankAccountResponse;
+                        }
+                ).toList())
+                .build();
 
         return userProfileResponse;
     }
@@ -75,25 +75,10 @@ public class UserService {
             throw new UserNotFoundException("User with Email " + email + " doesn't exist");
         }
         User user = userRepository.getUserByEmail(email);
+
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(user.getUserId());
 
-        UserProfileResponse userProfileResponse = new UserProfileResponse();
-        userProfileResponse.setFirstName(user.getFirstName());
-        userProfileResponse.setLastName(user.getLastName());
-        userProfileResponse.setEmail(user.getEmail());
-        userProfileResponse.setBirthdate(user.getBirthdate());
-
-        List<BankAccountResponse> accountDTOS = accounts.stream().map(
-                bankAccount -> {
-                    BankAccountResponse bankAccountResponse = new BankAccountResponse();
-                    bankAccountResponse.setAmount(bankAccount.getBalance());
-                    bankAccountResponse.setCurrency(bankAccount.getCurrency());
-                    bankAccountResponse.setAccountType(bankAccount.getAccountType());
-                    return bankAccountResponse;
-                }
-        ).toList();
-
-        userProfileResponse.setAccounts(accountDTOS);
+        UserProfileResponse userProfileResponse = userProfileMapper.map(user, accounts);
 
         return userProfileResponse;
     }
