@@ -28,6 +28,14 @@ public class UserRepository {
                 .into(User.class);
     }
 
+    public User getUserByEmail(String email) {
+        return dsl.selectFrom(USERS)
+                .where(USERS.EMAIL.eq(email))
+                .fetchOne()
+                .into(User.class);
+    }
+
+
     public boolean existsByEmail(String email) {
         return dsl.selectFrom(USERS)
                 .where(USERS.EMAIL.eq(email))
