@@ -150,7 +150,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!--	COMMENT FROM HERE		-->
 			<plugin>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
@@ -158,7 +157,7 @@
 				<executions>
 					<execution>
 						<id>generate-jooq</id>
-						<phase>generate-sources</phase>
+<!--						<phase>generate-sources</phase>-->
 						<goals>
 							<goal>generate</goal>
 						</goals>
@@ -190,9 +189,6 @@
 					</generator>
 				</configuration>
 			</plugin>
-
-
-			<!--	TO HERE		-->
 			<plugin>
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>
