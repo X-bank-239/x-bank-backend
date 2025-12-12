@@ -2,7 +2,7 @@ name: Build_docker_container.yml
 
 on:
   push:
-    branches: main
+    branches: ["**"]
 
 jobs:
   test:
