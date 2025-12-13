@@ -53,7 +53,7 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: mysecretpassword
-        run: ./mvnw org.flywaydb:flyway-maven-plugin:11.7.2:migrate
+        run: ./mvnw org.flywaydb:flyway-maven-plugin:11.7.2:migrate org.jooq:jooq-codegen-maven:3.19.26:generate
       - name: Run unit tests
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
