@@ -7,7 +7,7 @@ COPY src ./src
 
 RUN apk add --no-cache maven
 
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 
