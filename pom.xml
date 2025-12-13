@@ -150,20 +150,18 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!--	COMMENT FROM HERE		-->
 			<plugin>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
 				<version>${jooq.version}</version>
-				<executions>
+				<!-- <executions>
 					<execution>
 						<id>generate-jooq</id>
-						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 					</execution>
-				</executions>
+				</executions> -->
 				<dependencies>
 					<dependency>
 						<groupId>org.postgresql</groupId>
@@ -190,9 +188,6 @@
 					</generator>
 				</configuration>
 			</plugin>
-
-
-			<!--	TO HERE		-->
 			<plugin>
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>

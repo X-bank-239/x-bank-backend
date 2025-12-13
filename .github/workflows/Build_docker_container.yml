@@ -1,12 +1,21 @@
-name: Unit Tests
+name: Build and Publish Docker
 
 on:
   push:
     branches: ["**"]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  test:
+  build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     services:
       postgres:
         image: postgres:16
@@ -46,16 +55,36 @@ jobs:
           echo "Postgres did not become ready in time" >&2
           exit 1
 
-      - name: Flyway
+      - name: Flyway and jooq
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: mysecretpassword
         run: ./mvnw org.flywaydb:flyway-maven-plugin:11.7.2:migrate org.jooq:jooq-codegen-maven:3.19.26:generate
-      - name: Run unit tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: mysecretpassword
-        run: ./mvnw -B -ntp test
 
+
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
