@@ -5,8 +5,7 @@ on:
     workflows: ["Unit Tests"]
     types:
       - completed
-    branches:
-      - ["**"]
+    branches: ["**"]
 
 env:
   REGISTRY: ghcr.io
