@@ -1,10 +1,7 @@
 name: Build and Publish Docker
 
 on:
-  workflow_run:
-    workflows: ["Unit Tests"]
-    types:
-      - completed
+  push:
     branches: ["**"]
 
 env:
