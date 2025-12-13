@@ -1,12 +1,21 @@
-name: Build_docker_container.yml
+name: Build and Publish Docker
 
 on:
   push:
     branches: ["**"]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  test:
+  build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     services:
       postgres:
         image: postgres:16
@@ -51,17 +60,36 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: mysecretpassword
-        run: ./mvnw org.flywaydb:flyway-maven-plugin:11.7.2:migrate  org.jooq:jooq-codegen-maven:3.19.26:generate
+        run: ./mvnw org.flywaydb:flyway-maven-plugin:11.7.2:migrate org.jooq:jooq-codegen-maven:3.19.26:generate
+
       - name: Run unit tests
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: mysecretpassword
         run: ./mvnw -B -ntp test
-      - name: Build docker
-#        env:
-#          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
-#          SPRING_DATASOURCE_USERNAME: postgres
-#          SPRING_DATASOURCE_PASSWORD: mysecretpassword
-        run: docker build . -t x-bank-239/x-bank-backend
 
+      - name: Package JAR
+        run: ./mvnw -B -ntp package -DskipTests
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
