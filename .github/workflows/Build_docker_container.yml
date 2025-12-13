@@ -93,7 +93,6 @@ jobs:
           push: true
           tags:  |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=ref,event=branch
             type=sha,format=short,prefix=sha-
 
           labels: ${{ steps.meta.outputs.labels }}
