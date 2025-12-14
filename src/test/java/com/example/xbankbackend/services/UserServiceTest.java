@@ -15,7 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -55,11 +57,56 @@ public class UserServiceTest {
     }
 
     @Test
+    void create_shouldThrowIfBirthdateIsTooOld() {
+        String firstName = "Test";
+        String lastName = "User";
+        String email = "test@xbank.ru";
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, -200);
+        Date birthdate = cal.getTime();
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setBirthdate(birthdate);
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.create(user));
+    }
+
+    @Test
+    void create_shouldThrowIfBirthdateIsTooYoung() {
+        String firstName = "Test";
+        String lastName = "User";
+        String email = "test@xbank.ru";
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, -2);
+        Date birthdate = cal.getTime();
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setBirthdate(birthdate);
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.create(user));
+    }
+
+    @Test
     void createUser_shouldCreateWithDefaultValues() {
         String firstName = "Test";
         String lastName = "User";
         String email = "test@xbank.ru";
-        Date birthdate = new Date();
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, -20);
+        Date birthdate = cal.getTime();
 
         User user = new User();
         user.setFirstName(firstName);

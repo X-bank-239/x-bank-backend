@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -28,9 +30,32 @@ public class UserService {
     private UserProfileMapper userProfileMapper;
 
     public User create(@Valid User user) {
+        if (!isValidEmail(user.getEmail())) {
+            throw new UserGivesIncorrectEmail(user.getEmail() + " is not a valid email address");
+        }
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         }
+
+        int maxUserAge = 100;
+        int minUserAge = 12;
+
+        Date userBirthdate = user.getBirthdate();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, -minUserAge);
+        Date minDate = cal.getTime();
+
+        if (userBirthdate.after(minDate)) {
+            throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too young");
+        }
+
+        cal.add(Calendar.YEAR, -(maxUserAge - minUserAge));
+        Date maxDate = cal.getTime();
+
+        if (userBirthdate.before(maxDate)) {
+            throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too old");
+        }
+
         user.setUserId(UUID.randomUUID());
         userRepository.create(user);
         return userRepository.getUser(user.getUserId());
@@ -63,12 +88,7 @@ public class UserService {
     }
 
     public UserProfileResponse getProfileByEmail(String email) {
-
-        Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
-        Matcher matcher = emailPattern.matcher(email);
-        boolean isValid = matcher.matches();
-
-        if (!isValid) {
+        if (!isValidEmail(email)) {
             throw new UserGivesIncorrectEmail("Not a valid email address");
         }
         if (!userRepository.existsByEmail(email)) {
@@ -81,5 +101,11 @@ public class UserService {
         UserProfileResponse userProfileResponse = userProfileMapper.map(user, accounts);
 
         return userProfileResponse;
+    }
+
+    private boolean isValidEmail(String email) {
+        Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
+        Matcher matcher = emailPattern.matcher(email);
+        return matcher.matches();
     }
 }

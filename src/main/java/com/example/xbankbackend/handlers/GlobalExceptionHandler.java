@@ -65,8 +65,9 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_INPUT", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
     @ExceptionHandler(UserGivesIncorrectEmail.class)
-    public ResponseEntity<ErrorResponse> handleIncorrectEmail(IllegalArgumentException ex) {
+    public ResponseEntity<ErrorResponse> handleIncorrectEmail(UserGivesIncorrectEmail ex) {
         log.warn(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_INPUT", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
