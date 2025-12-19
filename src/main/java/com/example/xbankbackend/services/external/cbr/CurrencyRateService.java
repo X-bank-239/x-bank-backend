@@ -29,8 +29,6 @@ public class CurrencyRateService {
         String xmlResponse = cbrSoapService.getCursOnDate(date);
         Map<CurrencyType, Float> rates = currencyParserService.parseCurrencies(xmlResponse);
 
-        // TODO: проверка поддерживаемости валют
-
         for (Map.Entry<CurrencyType, Float> entry : rates.entrySet()) {
             CurrencyRate rate = new CurrencyRate();
             rate.setCurrency(entry.getKey());
