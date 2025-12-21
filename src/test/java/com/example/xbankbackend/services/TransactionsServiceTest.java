@@ -13,6 +13,8 @@ import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.repositories.external.cbr.CurrencyRateRepository;
+import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +40,9 @@ public class TransactionsServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private CurrencyRateService currencyRateService;
 
     @InjectMocks
     private TransactionsService transactionsService;
@@ -113,22 +119,6 @@ public class TransactionsServiceTest {
     }
 
     @Test
-    void validateDeposit_shouldThrowIfDifferentCurrency() {
-        UUID receiverId = UUID.randomUUID();
-
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.DEPOSIT);
-        transaction.setReceiverId(receiverId);
-        transaction.setCurrency(CurrencyType.USD);
-        transaction.setAmount(5000.0f);
-
-        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
-        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
-
-        assertThrows(DifferentCurrencyException.class, () -> transactionsService.deposit(transaction));
-    }
-
-    @Test
     void validateDeposit_shouldIncreaseBalance() {
         UUID receiverId = UUID.randomUUID();
 
@@ -140,6 +130,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(currencyRateService.convert(any(), any(), any())).thenReturn(5000.0f);
 
         transactionsService.deposit(transaction);
 
@@ -266,26 +257,6 @@ public class TransactionsServiceTest {
     }
 
     @Test
-    void validateTransfer_shouldThrowIfDifferentCurrency() {
-        UUID receiverId = UUID.randomUUID();
-        UUID senderId = UUID.randomUUID();
-
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.TRANSFER);
-        transaction.setReceiverId(receiverId);
-        transaction.setSenderId(senderId);
-        transaction.setCurrency(CurrencyType.USD);
-        transaction.setAmount(5000.0f);
-
-        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
-        when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
-        when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
-
-        assertThrows(DifferentCurrencyException.class, () -> transactionsService.transfer(transaction));
-    }
-
-    @Test
     void validateTransfer_shouldChangeBalance() {
         UUID receiverId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
@@ -301,6 +272,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(6000.0f);
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
+        when(currencyRateService.convert(any(), any(), any())).thenReturn(5000.0f);
 
         transactionsService.transfer(transaction);
 

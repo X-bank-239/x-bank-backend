@@ -5,13 +5,13 @@ import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
-import com.example.xbankbackend.exceptions.DifferentCurrencyException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +23,7 @@ import java.util.UUID;
 @Service
 public class TransactionsService {
 
+    private CurrencyRateService currencyRateService;
     private TransactionsRepository transactionsRepository;
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
@@ -31,13 +32,15 @@ public class TransactionsService {
         validateDeposit(deposit);
 
         UUID receiverId = deposit.getReceiverId();
-        float amount = deposit.getAmount();
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+
+        Float convertedAmount = currencyRateService.convert(deposit.getCurrency(), receiverCurrency, deposit.getAmount());
 
         deposit.setTransactionId(UUID.randomUUID());
         deposit.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(deposit);
-        bankAccountRepository.increaseBalance(receiverId, amount);
+        bankAccountRepository.increaseBalance(receiverId, convertedAmount);
     }
 
     public void transfer(Transaction transfer) {
@@ -45,14 +48,17 @@ public class TransactionsService {
 
         UUID senderId = transfer.getSenderId();
         UUID receiverId = transfer.getReceiverId();
-        float amount = transfer.getAmount();
+        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+
+        Float amount = transfer.getAmount();
+        Float convertedAmount = currencyRateService.convert(transfer.getCurrency(), receiverCurrency, transfer.getAmount());
 
         transfer.setTransactionId(UUID.randomUUID());
         transfer.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(transfer);
         bankAccountRepository.decreaseBalance(senderId, amount);
-        bankAccountRepository.increaseBalance(receiverId, amount);
+        bankAccountRepository.increaseBalance(receiverId, convertedAmount);
     }
 
     public void pay(Transaction payment) {
@@ -94,12 +100,6 @@ public class TransactionsService {
         if (amount <= 0.0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
-
-        // TODO: конвертация валют
-        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
-        if (currency != receiverCurrency) {
-            throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency);
-        }
     }
 
     private void validateTransfer(Transaction transfer) {
@@ -131,12 +131,6 @@ public class TransactionsService {
 
         if (amount <= 0.0) {
             throw new IllegalArgumentException("Amount must be positive");
-        }
-
-        // TODO: конвертация валют
-        CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
-        if (currency != receiverCurrency) {
-            throw new DifferentCurrencyException("Currency " + currency.toString() + " doesn't equal " + receiverCurrency.toString());
         }
     }
 
