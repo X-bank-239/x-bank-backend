@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static com.example.xbankbackend.generated.Tables.CURRENCY_RATES;
 
@@ -25,20 +24,17 @@ public class CurrencyRateRepository {
     }
 
     public boolean existsByDate(LocalDate date) {
-        return dsl.selectFrom(CURRENCY_RATES)
+        return !dsl.selectFrom(CURRENCY_RATES)
                 .where(CURRENCY_RATES.DATE.eq(date))
-                .fetch()
-                .size() == 1;
+                .fetch().isEmpty();
     }
 
-    public Optional<CurrencyRate> findByCurrencyCodeAndDate(CurrencyType currency, LocalDate date) {
+    public CurrencyRate findByCurrencyAndDate(CurrencyType currency, LocalDate date) {
         com.example.xbankbackend.generated.enums.CurrencyType generatedCurrency = com.example.xbankbackend.generated.enums.CurrencyType.valueOf(String.valueOf(currency));
-        return Optional.ofNullable(
-                dsl.selectFrom(CURRENCY_RATES)
-                        .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
-                        .and(CURRENCY_RATES.DATE.eq(date))
-                        .fetchOneInto(CurrencyRate.class)
-        );
+        return dsl.selectFrom(CURRENCY_RATES)
+                .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
+                .and(CURRENCY_RATES.DATE.eq(date))
+                .fetchOneInto(CurrencyRate.class);
     }
 
     public List<CurrencyRate> findByDateOrderByCurrencyAsc(LocalDate date) {
@@ -48,14 +44,12 @@ public class CurrencyRateRepository {
                 .fetchInto(CurrencyRate.class);
     }
 
-    public Optional<CurrencyRate> findLatestByCurrency(String currency) {
+    public CurrencyRate findLatestByCurrency(CurrencyType currency) {
         com.example.xbankbackend.generated.enums.CurrencyType generatedCurrency = com.example.xbankbackend.generated.enums.CurrencyType.valueOf(String.valueOf(currency));
-        return Optional.ofNullable(
-                dsl.selectFrom(CURRENCY_RATES)
-                        .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
-                        .orderBy(CURRENCY_RATES.DATE.desc())
-                        .limit(1)
-                        .fetchOneInto(CurrencyRate.class)
-        );
+        return dsl.selectFrom(CURRENCY_RATES)
+                .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
+                .orderBy(CURRENCY_RATES.DATE.desc())
+                .limit(1)
+                .fetchOneInto(CurrencyRate.class);
     }
 }

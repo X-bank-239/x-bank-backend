@@ -41,4 +41,15 @@ public class CurrencyRateService {
 
         log.info("Updated {} currency rates for {}: {}", rates.size(), date, rates);
     }
+
+    public Float convert(CurrencyType from, CurrencyType to, Float amount) {
+        Float fromRate = 1.0f, toRate = 1.0f;
+        if (from.toString() != "RUB") {
+            fromRate = currencyRateRepository.findLatestByCurrency(from).getRate();
+        }
+        if (to.toString() != "RUB") {
+            toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
+        }
+        return fromRate / toRate * amount;
+    }
 }
