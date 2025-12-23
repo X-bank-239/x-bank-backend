@@ -12,6 +12,7 @@ import java.util.List;
 public class UserProfileMapper {
     public UserProfileResponse map(User user, List<BankAccount> account){
         UserProfileResponse userProfileResponse = new UserProfileResponse().builder()
+                .userId(user.getUserId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
