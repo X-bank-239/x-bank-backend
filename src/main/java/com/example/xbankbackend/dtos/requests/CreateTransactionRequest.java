@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -17,7 +18,7 @@ public class CreateTransactionRequest {
     private TransactionType transactionType;
 
     @NotNull(message = "amount cannot be null")
-    private Float amount;
+    private BigDecimal amount;
 
     @NotNull(message = "currency cannot be blank")
     private CurrencyType currency;

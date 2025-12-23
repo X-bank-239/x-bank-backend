@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -198,12 +199,12 @@ public class UserServiceTest {
         user.setBirthdate(birthdate);
 
         BankAccount account1 = new BankAccount();
-        account1.setBalance(100.0f);
+        account1.setBalance(BigDecimal.valueOf(100.0));
         account1.setCurrency(CurrencyType.RUB);
         account1.setAccountType(BankAccountType.CREDIT);
 
         BankAccount account2 = new BankAccount();
-        account2.setBalance(5000.0f);
+        account2.setBalance(BigDecimal.valueOf(5000.0));
         account2.setCurrency(CurrencyType.CNY);
         account2.setAccountType(BankAccountType.DEBIT);
 
@@ -222,11 +223,11 @@ public class UserServiceTest {
 
         assertEquals(2, userProfileResponse.getAccounts().size());
 
-        assertEquals(100.0f, userProfileResponse.getAccounts().get(0).getAmount());
+        assertEquals(BigDecimal.valueOf(100.0), userProfileResponse.getAccounts().get(0).getAmount());
         assertEquals(CurrencyType.RUB, userProfileResponse.getAccounts().get(0).getCurrency());
         assertEquals(BankAccountType.CREDIT, userProfileResponse.getAccounts().get(0).getAccountType());
 
-        assertEquals(5000.0f, userProfileResponse.getAccounts().get(1).getAmount());
+        assertEquals(BigDecimal.valueOf(5000.0), userProfileResponse.getAccounts().get(1).getAmount());
         assertEquals(CurrencyType.CNY, userProfileResponse.getAccounts().get(1).getCurrency());
         assertEquals(BankAccountType.DEBIT, userProfileResponse.getAccounts().get(1).getAccountType());
     }

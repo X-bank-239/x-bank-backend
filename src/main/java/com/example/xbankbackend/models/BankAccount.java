@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -18,7 +19,7 @@ public class BankAccount {
     @NotNull(message = "userId cannot be null")
     private UUID userId;
 
-    private Float balance;
+    private BigDecimal balance;
 
     @NotNull(message = "currency cannot be null")
     private CurrencyType currency;
