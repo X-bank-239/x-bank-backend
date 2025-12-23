@@ -7,19 +7,20 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class CurrencyParserService {
 
-    public Map<CurrencyType, Float> parseCurrencies(String xmlResponse) {
+    public Map<CurrencyType, BigDecimal> parseCurrencies(String xmlResponse) {
         Document doc = Jsoup.parse(xmlResponse, "", Parser.xmlParser());
-        Map<CurrencyType, Float> rates = new HashMap<>();
+        Map<CurrencyType, BigDecimal> rates = new HashMap<>();
 
         for (Element val : doc.select("ValuteCursOnDate")) {
             String currencyCode = val.selectFirst("VchCode").text().trim();
-            Float rate = Float.parseFloat(val.selectFirst("VunitRate").text());
+            BigDecimal rate = BigDecimal.valueOf(Float.parseFloat(val.selectFirst("VunitRate").text()));
             if (isCurrencySupported(currencyCode)) {
                 rates.put(CurrencyType.valueOf(currencyCode), rate);
             }

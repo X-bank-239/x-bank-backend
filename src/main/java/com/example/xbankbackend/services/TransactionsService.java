@@ -15,6 +15,7 @@ import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class TransactionsService {
         UUID receiverId = deposit.getReceiverId();
         CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
 
-        Float convertedAmount = currencyRateService.convert(deposit.getCurrency(), receiverCurrency, deposit.getAmount());
+        BigDecimal convertedAmount = currencyRateService.convert(deposit.getCurrency(), receiverCurrency, deposit.getAmount());
 
         deposit.setTransactionId(UUID.randomUUID());
         deposit.setTransactionDate(OffsetDateTime.now());
@@ -50,8 +51,8 @@ public class TransactionsService {
         UUID receiverId = transfer.getReceiverId();
         CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
 
-        Float amount = transfer.getAmount();
-        Float convertedAmount = currencyRateService.convert(transfer.getCurrency(), receiverCurrency, transfer.getAmount());
+        BigDecimal amount = transfer.getAmount();
+        BigDecimal convertedAmount = currencyRateService.convert(transfer.getCurrency(), receiverCurrency, transfer.getAmount());
 
         transfer.setTransactionId(UUID.randomUUID());
         transfer.setTransactionDate(OffsetDateTime.now());
@@ -65,7 +66,7 @@ public class TransactionsService {
         validatePayment(payment);
 
         UUID senderId = payment.getSenderId();
-        float amount = payment.getAmount();
+        BigDecimal amount = payment.getAmount();
 
         payment.setTransactionId(UUID.randomUUID());
         payment.setTransactionDate(OffsetDateTime.now());
@@ -78,7 +79,7 @@ public class TransactionsService {
         CurrencyType currency = deposit.getCurrency();
         UUID receiverId = deposit.getReceiverId();
         UUID senderId = deposit.getSenderId();
-        Float amount = deposit.getAmount();
+        BigDecimal amount = deposit.getAmount();
         TransactionType transactionType = deposit.getTransactionType();
 
         if (transactionType != TransactionType.DEPOSIT) {
@@ -97,7 +98,7 @@ public class TransactionsService {
             throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
 
-        if (amount <= 0.0) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
     }
@@ -106,7 +107,7 @@ public class TransactionsService {
         CurrencyType currency = transfer.getCurrency();
         UUID receiverId = transfer.getReceiverId();
         UUID senderId = transfer.getSenderId();
-        Float amount = transfer.getAmount();
+        BigDecimal amount = transfer.getAmount();
         TransactionType transactionType = transfer.getTransactionType();
 
         if (transactionType != TransactionType.TRANSFER) {
@@ -125,11 +126,11 @@ public class TransactionsService {
             throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
-        if (amount > bankAccountRepository.getBalance(senderId)) {
+        if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
-        if (amount <= 0.0) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
     }
@@ -137,7 +138,7 @@ public class TransactionsService {
     private void validatePayment(Transaction payment) {
         UUID receiverId = payment.getReceiverId();
         UUID senderId = payment.getSenderId();
-        Float amount = payment.getAmount();
+        BigDecimal amount = payment.getAmount();
         TransactionType transactionType = payment.getTransactionType();
 
         if (transactionType != TransactionType.PAYMENT) {
@@ -156,11 +157,11 @@ public class TransactionsService {
             throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
-        if (amount > bankAccountRepository.getBalance(senderId)) {
+        if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
-        if (amount <= 0.0) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
     }

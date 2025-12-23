@@ -4,6 +4,7 @@ import com.example.xbankbackend.enums.CurrencyType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,7 +15,7 @@ public class CurrencyRate {
     private CurrencyType currency;
 
     @NotNull(message = "rate cannot be null")
-    private Float rate;
+    private BigDecimal rate;
 
     @NotNull(message = "date cannot be null")
     private LocalDate date;

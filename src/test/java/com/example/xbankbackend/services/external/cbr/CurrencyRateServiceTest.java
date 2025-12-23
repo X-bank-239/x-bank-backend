@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -33,9 +35,9 @@ public class CurrencyRateServiceTest {
     void updateOnDate_shouldUpdateRatesWhenNoRatesExistForDate() {
         LocalDate date = LocalDate.of(2025, 12, 15);
         String xmlResponse = "<xml>...</xml>";
-        Map<CurrencyType, Float> rates = Map.of(
-                CurrencyType.USD, 79.43f,
-                CurrencyType.EUR, 93.81f
+        Map<CurrencyType, BigDecimal> rates = Map.of(
+                CurrencyType.USD, BigDecimal.valueOf(79.43),
+                CurrencyType.EUR, BigDecimal.valueOf(93.81)
         );
 
         when(currencyRateRepository.existsByDate(date)).thenReturn(false);
@@ -66,54 +68,54 @@ public class CurrencyRateServiceTest {
     @Test
     void convert_shouldConvertCurrencyWhenBothAreNotRUB() {
         CurrencyRate usdRate = new CurrencyRate();
-        usdRate.setRate(79.43f);
+        usdRate.setRate(BigDecimal.valueOf(79.43));
         usdRate.setCurrency(CurrencyType.USD);
 
         CurrencyRate eurRate = new CurrencyRate();
-        eurRate.setRate(93.81f);
+        eurRate.setRate(BigDecimal.valueOf(93.81));
         eurRate.setCurrency(CurrencyType.EUR);
 
         when(currencyRateRepository.findLatestByCurrency(CurrencyType.USD)).thenReturn(usdRate);
         when(currencyRateRepository.findLatestByCurrency(CurrencyType.EUR)).thenReturn(eurRate);
 
-        Float result = currencyRateService.convert(CurrencyType.USD, CurrencyType.EUR, 100.0f);
+        BigDecimal result = currencyRateService.convert(CurrencyType.USD, CurrencyType.EUR, BigDecimal.valueOf(100.0));
 
-        Float expected = (79.43f / 93.81f) * 100.0f;
-        assertEquals(expected, result, 0.01f);
+        BigDecimal expected = BigDecimal.valueOf(79.43f).divide(BigDecimal.valueOf(93.81), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0));
+        assertEquals(0, expected.compareTo(result));
     }
 
     @Test
     void convert_shouldConvertCurrencyWhenFromIsRUB() {
         CurrencyRate eurRate = new CurrencyRate();
-        eurRate.setRate(93.81f);
+        eurRate.setRate(BigDecimal.valueOf(93.81));
         eurRate.setCurrency(CurrencyType.EUR);
 
         when(currencyRateRepository.findLatestByCurrency(CurrencyType.EUR)).thenReturn(eurRate);
 
-        Float result = currencyRateService.convert(CurrencyType.RUB, CurrencyType.EUR, 100.0f);
+        BigDecimal result = currencyRateService.convert(CurrencyType.RUB, CurrencyType.EUR, BigDecimal.valueOf(100.0));
 
-        Float expected = (1.0f / 93.81f) * 100.0f;
-        assertEquals(expected, result, 0.01f);
+        BigDecimal expected = BigDecimal.valueOf(1.0).divide(BigDecimal.valueOf(93.81), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0));
+        assertEquals(0, expected.compareTo(result));
     }
 
     @Test
     void convert_shouldConvertCurrencyWhenToIsRUB() {
         CurrencyRate usdRate = new CurrencyRate();
-        usdRate.setRate(79.43f);
+        usdRate.setRate(BigDecimal.valueOf(79.43));
         usdRate.setCurrency(CurrencyType.USD);
 
         when(currencyRateRepository.findLatestByCurrency(CurrencyType.USD)).thenReturn(usdRate);
 
-        Float result = currencyRateService.convert(CurrencyType.USD, CurrencyType.RUB, 100.0f);
+        BigDecimal result = currencyRateService.convert(CurrencyType.USD, CurrencyType.RUB, BigDecimal.valueOf(100.0));
 
-        Float expected = (79.43f / 1.0f) * 100.0f;
-        assertEquals(expected, result, 0.01f);
+        BigDecimal expected = BigDecimal.valueOf(79.43f).divide(BigDecimal.valueOf(1.0), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100.0));
+        assertEquals(0, expected.compareTo(result));
     }
 
     @Test
     void convert_shouldConvertCurrencyWhenBothAreRUB() {
-        Float result = currencyRateService.convert(CurrencyType.RUB, CurrencyType.RUB, 100.0f);
+        BigDecimal result = currencyRateService.convert(CurrencyType.RUB, CurrencyType.RUB, BigDecimal.valueOf(100.0));
 
-        assertEquals(100.0f, result, 0.01f);
+        assertEquals(0, result.compareTo(BigDecimal.valueOf(100.0)));
     }
 }

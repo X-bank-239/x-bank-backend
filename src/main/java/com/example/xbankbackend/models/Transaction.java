@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class Transaction {
     private UUID receiverId;
 
     @NotNull(message = "amount cannot be null")
-    private Float amount;
+    private BigDecimal amount;
 
     @NotNull(message = "currency cannot be blank")
     private CurrencyType currency;

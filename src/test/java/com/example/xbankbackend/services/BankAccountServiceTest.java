@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,7 +61,7 @@ public class BankAccountServiceTest {
 
         bankAccountService.create(bankAccount);
 
-        assertEquals(0.0f, bankAccount.getBalance());
+        assertEquals(BigDecimal.ZERO, bankAccount.getBalance());
         assertNotNull(bankAccount.getAccountId());
 
         verify(bankAccountRepository).create(bankAccount);

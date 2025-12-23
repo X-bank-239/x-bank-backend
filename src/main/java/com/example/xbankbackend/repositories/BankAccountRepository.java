@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,14 +25,14 @@ public class BankAccountRepository {
                 .execute();
     }
 
-    public void increaseBalance(UUID accountId, float amount) {
+    public void increaseBalance(UUID accountId, BigDecimal amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.add(amount))
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .execute();
     }
 
-    public void decreaseBalance(UUID accountId, float amount) {
+    public void decreaseBalance(UUID accountId, BigDecimal amount) {
         dsl.update(BANK_ACCOUNTS)
                 .set(BANK_ACCOUNTS.BALANCE, BANK_ACCOUNTS.BALANCE.subtract(amount))
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
@@ -59,11 +60,11 @@ public class BankAccountRepository {
                 .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
     }
 
-    public Float getBalance(UUID accountId) {
+    public BigDecimal getBalance(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
-                .getValue(BANK_ACCOUNTS.BALANCE, Float.class);
+                .getValue(BANK_ACCOUNTS.BALANCE, BigDecimal.class);
     }
 
     public List<BankAccount> getBankAccounts(UUID accountId) {

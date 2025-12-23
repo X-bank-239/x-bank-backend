@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -27,9 +29,9 @@ public class CurrencyRateService {
         }
 
         String xmlResponse = cbrSoapService.getCursOnDate(date);
-        Map<CurrencyType, Float> rates = currencyParserService.parseCurrencies(xmlResponse);
+        Map<CurrencyType, BigDecimal> rates = currencyParserService.parseCurrencies(xmlResponse);
 
-        for (Map.Entry<CurrencyType, Float> entry : rates.entrySet()) {
+        for (Map.Entry<CurrencyType, BigDecimal> entry : rates.entrySet()) {
             CurrencyRate rate = new CurrencyRate();
             rate.setCurrency(entry.getKey());
             rate.setRate(entry.getValue());
@@ -42,14 +44,14 @@ public class CurrencyRateService {
         log.info("Updated {} currency rates for {}: {}", rates.size(), date, rates);
     }
 
-    public Float convert(CurrencyType from, CurrencyType to, Float amount) {
-        Float fromRate = 1.0f, toRate = 1.0f;
+    public BigDecimal convert(CurrencyType from, CurrencyType to, BigDecimal amount) {
+        BigDecimal fromRate = BigDecimal.ONE, toRate = BigDecimal.ONE;
         if (from.toString() != "RUB") {
             fromRate = currencyRateRepository.findLatestByCurrency(from).getRate();
         }
         if (to.toString() != "RUB") {
             toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
         }
-        return fromRate / toRate * amount;
+        return fromRate.divide(toRate, 4, RoundingMode.HALF_UP).multiply(amount);
     }
 }
