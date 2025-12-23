@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @AllArgsConstructor
@@ -36,7 +36,7 @@ public class CurrencyRateService {
             rate.setCurrency(entry.getKey());
             rate.setRate(entry.getValue());
             rate.setDate(date);
-            rate.setCreatedAt(LocalDateTime.now());
+            rate.setCreatedAt(OffsetDateTime.now());
 
             currencyRateRepository.create(rate);
         }

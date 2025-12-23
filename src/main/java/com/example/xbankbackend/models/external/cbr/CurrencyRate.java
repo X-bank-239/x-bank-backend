@@ -6,7 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 public class CurrencyRate {
@@ -21,5 +21,5 @@ public class CurrencyRate {
     private LocalDate date;
 
     @NotNull(message = "createdAt cannot be null")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }
