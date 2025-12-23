@@ -5,7 +5,6 @@ import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
-import com.example.xbankbackend.exceptions.DifferentCurrencyException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
@@ -13,7 +12,6 @@ import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
-import com.example.xbankbackend.repositories.external.cbr.CurrencyRateRepository;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,15 +19,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TransactionsServiceTest {
@@ -57,7 +55,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setReceiverId(receiverId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
@@ -70,7 +68,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.DEPOSIT);
         transaction.setReceiverId(receiverId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
@@ -84,7 +82,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(UUID.randomUUID());
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
     }
@@ -97,7 +95,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.DEPOSIT);
         transaction.setReceiverId(receiverId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
@@ -112,7 +110,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.DEPOSIT);
         transaction.setReceiverId(receiverId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(-5000.0));
+        transaction.setAmount(BigDecimal.valueOf(-5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
 
@@ -127,15 +125,15 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.DEPOSIT);
         transaction.setReceiverId(receiverId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
-        when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0));
+        when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
 
         transactionsService.deposit(transaction);
 
-        verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0));
+        verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0f));
     }
 
     // validateTransfer
@@ -149,7 +147,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
@@ -164,7 +162,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
@@ -179,7 +177,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
@@ -194,7 +192,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
@@ -211,7 +209,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
@@ -229,11 +227,11 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction));
     }
@@ -248,11 +246,11 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(-5000.0));
+        transaction.setAmount(BigDecimal.valueOf(-5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
     }
@@ -267,18 +265,18 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(receiverId);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
-        when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0));
+        when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
 
         transactionsService.transfer(transaction);
 
-        verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0));
-        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0));
+        verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0f));
+        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
     }
 
     // validatePayment
@@ -290,7 +288,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.DEPOSIT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
     }
@@ -303,7 +301,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
     }
@@ -317,7 +315,7 @@ public class TransactionsServiceTest {
         transaction.setReceiverId(UUID.randomUUID());
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
     }
@@ -330,7 +328,7 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
 
@@ -345,10 +343,10 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction));
     }
@@ -361,10 +359,10 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(-5000.0));
+        transaction.setAmount(BigDecimal.valueOf(-5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
     }
@@ -377,14 +375,14 @@ public class TransactionsServiceTest {
         transaction.setTransactionType(TransactionType.PAYMENT);
         transaction.setSenderId(senderId);
         transaction.setCurrency(CurrencyType.RUB);
-        transaction.setAmount(BigDecimal.valueOf(5000.0));
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0));
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
 
         transactionsService.pay(transaction);
 
-        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0));
+        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
     }
 
     // getRecent
@@ -439,25 +437,25 @@ public class TransactionsServiceTest {
         Transaction transaction1 = new Transaction();
         transaction1.setTransactionType(TransactionType.DEPOSIT);
         transaction1.setCurrency(CurrencyType.RUB);
-        transaction1.setAmount(BigDecimal.valueOf(5000.0));
+        transaction1.setAmount(BigDecimal.valueOf(5000.0f));
         transaction1.setReceiverId(accountId);
 
         Transaction transaction2 = new Transaction();
         transaction2.setTransactionType(TransactionType.PAYMENT);
         transaction2.setCurrency(CurrencyType.RUB);
-        transaction2.setAmount(BigDecimal.valueOf(200.0));
+        transaction2.setAmount(BigDecimal.valueOf(200.0f));
         transaction2.setSenderId(accountId);
 
         TransactionResponse transactionResponse1 = new TransactionResponse();
         transactionResponse1.setTransactionType(TransactionType.DEPOSIT);
         transactionResponse1.setCurrency(CurrencyType.RUB);
-        transactionResponse1.setAmount(BigDecimal.valueOf(5000.0));
+        transactionResponse1.setAmount(BigDecimal.valueOf(5000.0f));
         transactionResponse1.setReceiverName("Test");
 
         TransactionResponse transactionResponse2 = new TransactionResponse();
         transactionResponse2.setTransactionType(TransactionType.PAYMENT);
         transactionResponse2.setCurrency(CurrencyType.RUB);
-        transactionResponse2.setAmount(BigDecimal.valueOf(200.0));
+        transactionResponse2.setAmount(BigDecimal.valueOf(200.0f));
         transactionResponse2.setSenderName("Test");
 
         List<Transaction> transactions = List.of(transaction1, transaction2);

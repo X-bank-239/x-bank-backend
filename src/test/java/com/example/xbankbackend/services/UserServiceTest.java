@@ -6,6 +6,8 @@ import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
+import com.example.xbankbackend.jwt.JwtUtil;
+import com.example.xbankbackend.mappers.UserProfileMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -15,7 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -34,6 +36,15 @@ public class UserServiceTest {
 
     @Mock
     private BankAccountRepository bankAccountRepository;
+
+    @Mock
+    private UserProfileMapper userProfileMapper;
+
+    @Mock
+    private JwtUtil jwtUtil;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -104,6 +115,7 @@ public class UserServiceTest {
         String firstName = "Test";
         String lastName = "User";
         String email = "test@xbank.ru";
+        String password = "1122334455";
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.YEAR, -20);
@@ -114,6 +126,7 @@ public class UserServiceTest {
         user.setLastName(lastName);
         user.setEmail(email);
         user.setBirthdate(birthdate);
+        user.setPassword(password);
 
         when(userRepository.existsByEmail(email)).thenReturn(false);
 
