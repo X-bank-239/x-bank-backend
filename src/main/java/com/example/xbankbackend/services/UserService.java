@@ -5,6 +5,7 @@ import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
+import com.example.xbankbackend.jwt.JwtUtil;
 import com.example.xbankbackend.mappers.UserProfileMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
@@ -12,6 +13,8 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -28,8 +31,10 @@ public class UserService {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
     private UserProfileMapper userProfileMapper;
+    private JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    public User create(@Valid User user) {
+    public UserProfileResponse create(@Valid User user) {
         if (!isValidEmail(user.getEmail())) {
             throw new UserGivesIncorrectEmail(user.getEmail() + " is not a valid email address");
         }
@@ -56,9 +61,16 @@ public class UserService {
             throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too old");
         }
 
+        Argon2PasswordEncoder arg2SpringSecurity = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
+        String hashedPassword = arg2SpringSecurity.encode(user.getPassword());
+        user.setPassword(hashedPassword);
+
         user.setUserId(UUID.randomUUID());
         userRepository.create(user);
-        return userRepository.getUser(user.getUserId());
+
+        List<BankAccount> accounts = bankAccountRepository.getBankAccounts(user.getUserId());
+
+        return userProfileMapper.map(userRepository.getUser(user.getUserId()), accounts);
     }
 
     public UserProfileResponse getProfile(UUID uuid) {
@@ -101,6 +113,24 @@ public class UserService {
         UserProfileResponse userProfileResponse = userProfileMapper.map(user, accounts);
 
         return userProfileResponse;
+    }
+    public String generateTokenByEmail(String email){
+        User user = userRepository.getUserByEmail(email);
+        return jwtUtil.generateToken(user.getUserId());
+    }
+    public boolean authenticated(String email, String input_password){
+        if (!userRepository.existsByEmail(email)) {
+            return false;
+        }
+
+        User user = userRepository.getUserByEmail(email);
+        String password = userRepository.getHashedPassword(user.getUserId());
+
+        if (password != "" && passwordEncoder.matches(input_password, user.getPassword())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean isValidEmail(String email) {
