@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 
+@Log4j2
 @Component
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -36,10 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userId != null  &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // minimal auth carrying userId as principal
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                log.info("User ID : {}", userId);
             }
         }
 
