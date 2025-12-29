@@ -6,6 +6,7 @@ import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
+import com.example.xbankbackend.exceptions.UserIsNotABankAccountOwner;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -29,8 +30,8 @@ public class TransactionsService {
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
 
-    public void deposit(Transaction deposit) {
-        validateDeposit(deposit);
+    public void deposit(Transaction deposit, UUID authenticatedUserId) {
+        validateDeposit(deposit, authenticatedUserId);
 
         UUID receiverId = deposit.getReceiverId();
         CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
@@ -44,8 +45,8 @@ public class TransactionsService {
         bankAccountRepository.increaseBalance(receiverId, convertedAmount);
     }
 
-    public void transfer(Transaction transfer) {
-        validateTransfer(transfer);
+    public void transfer(Transaction transfer, UUID authenticatedUserId) {
+        validateTransfer(transfer, authenticatedUserId);
 
         UUID senderId = transfer.getSenderId();
         UUID receiverId = transfer.getReceiverId();
@@ -62,9 +63,9 @@ public class TransactionsService {
         bankAccountRepository.increaseBalance(receiverId, convertedAmount);
     }
 
-    public void pay(Transaction payment) {
-        validatePayment(payment);
-
+    public void pay(Transaction payment, UUID authenticatedUserId) {
+        validatePayment(payment, authenticatedUserId);
+        UUID ownerOfBankAccount = bankAccountRepository.getUserId(payment.getReceiverId());
         UUID senderId = payment.getSenderId();
         BigDecimal amount = payment.getAmount();
 
@@ -75,71 +76,94 @@ public class TransactionsService {
         bankAccountRepository.decreaseBalance(senderId, amount);
     }
 
-    private void validateDeposit(Transaction deposit) {
+    private void validateDeposit(Transaction deposit, UUID authenticatedUserId) {
         CurrencyType currency = deposit.getCurrency();
         UUID receiverId = deposit.getReceiverId();
         UUID senderId = deposit.getSenderId();
         BigDecimal amount = deposit.getAmount();
         TransactionType transactionType = deposit.getTransactionType();
 
-        if (transactionType != TransactionType.DEPOSIT) {
-            throw new IllegalArgumentException("Method name " + transactionType.toString() + " is not allowed (Deposit)");
+        if (!bankAccountRepository.exists(receiverId)) {
+            throw new BankAccountNotFoundException("Bank account with UUID " + receiverId + " doesn't exist");
         }
+
+        UUID accountOwnerId = bankAccountRepository.getUserId(receiverId);
 
         if (receiverId == null) {
             throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
         }
-
         if (senderId != null) {
             throw new IllegalArgumentException("SenderId must be null (Deposit)");
         }
 
-        if (!bankAccountRepository.exists(receiverId)) {
-            throw new UserNotFoundException("No such receiver Id " + receiverId);
+        if (transactionType != TransactionType.DEPOSIT) {
+            throw new IllegalArgumentException("Method name " + deposit.getTransactionType() + " is not allowed (Expected: DEPOSIT)");
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        if (!authenticatedUserId.equals(accountOwnerId)) {
+            throw new UserIsNotABankAccountOwner("Authenticated user is not the bank account owner");
         }
     }
 
-    private void validateTransfer(Transaction transfer) {
+    private void validateTransfer(Transaction transfer, UUID authenticatedUserId) {
         CurrencyType currency = transfer.getCurrency();
         UUID receiverId = transfer.getReceiverId();
         UUID senderId = transfer.getSenderId();
         BigDecimal amount = transfer.getAmount();
         TransactionType transactionType = transfer.getTransactionType();
 
-        if (transactionType != TransactionType.TRANSFER) {
-            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Transfer)");
-        }
-
-        if (senderId == null || receiverId == null) {
-            throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
-        }
-
         if (!bankAccountRepository.exists(receiverId)) {
             throw new UserNotFoundException("No such receiver Id " + receiverId);
         }
+
+        UUID accountOwnerId = bankAccountRepository.getUserId(receiverId);
 
         if (!bankAccountRepository.exists(senderId)) {
             throw new UserNotFoundException("No such sender Id " + senderId);
         }
 
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        if (transactionType != TransactionType.TRANSFER) {
+            throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Transfer)");
+        }
+
+        if (transfer.getSenderId() == null || transfer.getReceiverId() == null) {
+            throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
+        }
+
+
         if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+        if (!authenticatedUserId.equals(accountOwnerId) ) {
+            throw new UserIsNotABankAccountOwner("Authenticated user is not the bank account owner");
         }
+
     }
 
-    private void validatePayment(Transaction payment) {
+    private void validatePayment(Transaction payment, UUID authenticatedUserId) {
+        CurrencyType currency = payment.getCurrency();
         UUID receiverId = payment.getReceiverId();
         UUID senderId = payment.getSenderId();
         BigDecimal amount = payment.getAmount();
         TransactionType transactionType = payment.getTransactionType();
+
+        if (!bankAccountRepository.exists(receiverId)) {
+            throw new UserNotFoundException("No such receiver Id " + receiverId);
+        }
+        UUID userReceiverId = bankAccountRepository.getUserId(payment.getReceiverId());
+
+        if (!bankAccountRepository.exists(senderId)) {
+            throw new UserNotFoundException("No such sender Id " + senderId);
+        }
 
         if (transactionType != TransactionType.PAYMENT) {
             throw new IllegalArgumentException("Method name " + transactionType + " is not allowed (Payment)");
@@ -153,16 +177,16 @@ public class TransactionsService {
             throw new IllegalArgumentException("ReceiverId must be null (Payment)");
         }
 
-        if (!bankAccountRepository.exists(senderId)) {
-            throw new UserNotFoundException("No such sender Id " + senderId);
-        }
-
         if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        if (!authenticatedUserId.equals(userReceiverId) ) {
+            throw new UserIsNotABankAccountOwner("Authenticated user is not the bank account owner");
         }
     }
 
