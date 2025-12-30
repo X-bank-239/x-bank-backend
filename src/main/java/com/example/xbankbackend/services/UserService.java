@@ -1,6 +1,5 @@
 package com.example.xbankbackend.services;
 
-import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
@@ -80,21 +79,7 @@ public class UserService {
         User user = userRepository.getUser(uuid);
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
 
-        UserProfileResponse userProfileResponse = new UserProfileResponse().builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .birthdate(user.getBirthdate())
-                .accounts(accounts.stream().map(
-                        bankAccount -> {
-                            BankAccountResponse bankAccountResponse = new BankAccountResponse();
-                            bankAccountResponse.setAmount(bankAccount.getBalance());
-                            bankAccountResponse.setCurrency(bankAccount.getCurrency());
-                            bankAccountResponse.setAccountType(bankAccount.getAccountType());
-                            return bankAccountResponse;
-                        }
-                ).toList())
-                .build();
+        UserProfileResponse userProfileResponse = userProfileMapper.map(user, accounts);
 
         return userProfileResponse;
     }

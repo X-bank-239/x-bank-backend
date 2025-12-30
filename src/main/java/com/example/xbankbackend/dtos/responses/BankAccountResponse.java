@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BankAccountResponse {
+    private UUID accountId;
     private BigDecimal amount;
     private CurrencyType currency;
     private BankAccountType accountType;
