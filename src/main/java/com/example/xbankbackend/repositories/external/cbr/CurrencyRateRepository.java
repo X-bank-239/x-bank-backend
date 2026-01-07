@@ -1,6 +1,7 @@
 package com.example.xbankbackend.repositories.external.cbr;
 
 import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.mappers.CurrencyTypeMapper;
 import com.example.xbankbackend.models.external.cbr.CurrencyRate;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -16,6 +17,7 @@ import static com.example.xbankbackend.generated.Tables.CURRENCY_RATES;
 public class CurrencyRateRepository {
 
     private final DSLContext dsl;
+    private CurrencyTypeMapper currencyTypeMapper;
 
     public void create(CurrencyRate rate) {
         dsl.insertInto(CURRENCY_RATES)
@@ -24,15 +26,15 @@ public class CurrencyRateRepository {
     }
 
     public boolean existsByDate(LocalDate date) {
-        return !dsl.selectFrom(CURRENCY_RATES)
+        return dsl.selectFrom(CURRENCY_RATES)
                 .where(CURRENCY_RATES.DATE.eq(date))
-                .fetch().isEmpty();
+                .fetch()
+                .isNotEmpty();
     }
 
     public CurrencyRate findByCurrencyAndDate(CurrencyType currency, LocalDate date) {
-        com.example.xbankbackend.generated.enums.CurrencyType generatedCurrency = com.example.xbankbackend.generated.enums.CurrencyType.valueOf(String.valueOf(currency));
         return dsl.selectFrom(CURRENCY_RATES)
-                .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
+                .where(CURRENCY_RATES.CURRENCY.eq(currencyTypeMapper.toGenerated(currency)))
                 .and(CURRENCY_RATES.DATE.eq(date))
                 .fetchOneInto(CurrencyRate.class);
     }
@@ -45,9 +47,8 @@ public class CurrencyRateRepository {
     }
 
     public CurrencyRate findLatestByCurrency(CurrencyType currency) {
-        com.example.xbankbackend.generated.enums.CurrencyType generatedCurrency = com.example.xbankbackend.generated.enums.CurrencyType.valueOf(String.valueOf(currency));
         return dsl.selectFrom(CURRENCY_RATES)
-                .where(CURRENCY_RATES.CURRENCY.eq(generatedCurrency))
+                .where(CURRENCY_RATES.CURRENCY.eq(currencyTypeMapper.toGenerated(currency)))
                 .orderBy(CURRENCY_RATES.DATE.desc())
                 .limit(1)
                 .fetchOneInto(CurrencyRate.class);
