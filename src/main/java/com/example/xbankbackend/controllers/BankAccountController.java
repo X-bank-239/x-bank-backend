@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Log4j2
 @CrossOrigin
 @RestController
@@ -29,4 +31,10 @@ public class BankAccountController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bankAccount);
     }
 
+    @GetMapping("/get/{accountId}")
+    public ResponseEntity<BankAccount> get(@PathVariable UUID accountId) {
+        log.info("Getting account with id {}", accountId);
+        BankAccount bankAccount = bankAccountService.get(accountId);
+        return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
+    }
 }

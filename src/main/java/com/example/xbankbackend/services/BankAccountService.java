@@ -1,5 +1,6 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -24,5 +25,12 @@ public class BankAccountService {
         bankAccount.setBalance(BigDecimal.ZERO);
         bankAccount.setAccountId(UUID.randomUUID());
         bankAccountRepository.create(bankAccount);
+    }
+
+    public BankAccount get(UUID accountId) {
+        if (!bankAccountRepository.exists(accountId)) {
+            throw new BankAccountNotFoundException("Account with UUID " + accountId + " does not exist");
+        }
+        return bankAccountRepository.get(accountId);
     }
 }
