@@ -5,6 +5,7 @@ import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
+import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.mappers.UserProfileMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
@@ -28,6 +29,7 @@ public class UserService {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
     private UserProfileMapper userProfileMapper;
+    private BankAccountMapper bankAccountMapper;
 
     public User create(@Valid User user) {
         if (!isValidEmail(user.getEmail())) {
@@ -76,7 +78,7 @@ public class UserService {
                 .accounts(accounts.stream().map(
                         bankAccount -> {
                             BankAccountResponse bankAccountResponse = new BankAccountResponse();
-                            bankAccountResponse.setAmount(bankAccount.getBalance());
+                            bankAccountResponse.setBalance(bankAccount.getBalance());
                             bankAccountResponse.setCurrency(bankAccount.getCurrency());
                             bankAccountResponse.setAccountType(bankAccount.getAccountType());
                             return bankAccountResponse;
@@ -85,6 +87,15 @@ public class UserService {
                 .build();
 
         return userProfileResponse;
+    }
+
+    public List<BankAccountResponse> getAccounts(UUID userId) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " not found");
+        }
+        List<BankAccount> bankAccounts = bankAccountRepository.getBankAccounts(userId);
+        System.out.println(bankAccounts);
+        return bankAccountMapper.accountsToResponses(bankAccounts);
     }
 
     public UserProfileResponse getProfileByEmail(String email) {

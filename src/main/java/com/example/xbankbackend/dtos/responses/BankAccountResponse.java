@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Data
 public class BankAccountResponse {
-    private BigDecimal amount;
+    private BigDecimal balance;
     private CurrencyType currency;
     private BankAccountType accountType;
 }

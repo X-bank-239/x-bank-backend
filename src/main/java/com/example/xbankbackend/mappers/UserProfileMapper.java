@@ -19,7 +19,7 @@ public class UserProfileMapper {
                 .accounts(account.stream().map(
                         bankAccount -> {
                             BankAccountResponse bankAccountResponse = new BankAccountResponse();
-                            bankAccountResponse.setAmount(bankAccount.getBalance());
+                            bankAccountResponse.setBalance(bankAccount.getBalance());
                             bankAccountResponse.setCurrency(bankAccount.getCurrency());
                             bankAccountResponse.setAccountType(bankAccount.getAccountType());
                             return bankAccountResponse;
