@@ -1,7 +1,9 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
+import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
@@ -17,6 +19,7 @@ public class BankAccountService {
 
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
+    private BankAccountMapper bankAccountMapper;
 
     public void create(BankAccount bankAccount) {
         if (!userRepository.exists(bankAccount.getUserId())) {
@@ -27,10 +30,11 @@ public class BankAccountService {
         bankAccountRepository.create(bankAccount);
     }
 
-    public BankAccount get(UUID accountId) {
+    public BankAccountResponse get(UUID accountId) {
         if (!bankAccountRepository.exists(accountId)) {
             throw new BankAccountNotFoundException("Account with UUID " + accountId + " does not exist");
         }
-        return bankAccountRepository.get(accountId);
+        BankAccount bankAccount = bankAccountRepository.get(accountId);
+        return bankAccountMapper.accountToResponse(bankAccount);
     }
 }

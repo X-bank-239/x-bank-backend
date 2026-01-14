@@ -1,6 +1,7 @@
 package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateBankAccountRequest;
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.services.BankAccountService;
@@ -32,9 +33,9 @@ public class BankAccountController {
     }
 
     @GetMapping("/get/{accountId}")
-    public ResponseEntity<BankAccount> get(@PathVariable UUID accountId) {
+    public ResponseEntity<BankAccountResponse> get(@PathVariable UUID accountId) {
         log.info("Getting account with id {}", accountId);
-        BankAccount bankAccount = bankAccountService.get(accountId);
+        BankAccountResponse bankAccount = bankAccountService.get(accountId);
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 }

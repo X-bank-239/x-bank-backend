@@ -12,5 +12,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BankAccountMapper {
     BankAccount requestToAccount(CreateBankAccountRequest request);
+    BankAccountResponse accountToResponse(BankAccount bankAccount);
     List<BankAccountResponse> accountsToResponses(List<BankAccount> accounts);
 }
