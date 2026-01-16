@@ -223,11 +223,11 @@ public class UserServiceTest {
 
         assertEquals(2, userProfileResponse.getAccounts().size());
 
-        assertEquals(BigDecimal.valueOf(100.0), userProfileResponse.getAccounts().get(0).getAmount());
+        assertEquals(BigDecimal.valueOf(100.0), userProfileResponse.getAccounts().get(0).getBalance());
         assertEquals(CurrencyType.RUB, userProfileResponse.getAccounts().get(0).getCurrency());
         assertEquals(BankAccountType.CREDIT, userProfileResponse.getAccounts().get(0).getAccountType());
 
-        assertEquals(BigDecimal.valueOf(5000.0), userProfileResponse.getAccounts().get(1).getAmount());
+        assertEquals(BigDecimal.valueOf(5000.0), userProfileResponse.getAccounts().get(1).getBalance());
         assertEquals(CurrencyType.CNY, userProfileResponse.getAccounts().get(1).getCurrency());
         assertEquals(BankAccountType.DEBIT, userProfileResponse.getAccounts().get(1).getAccountType());
     }

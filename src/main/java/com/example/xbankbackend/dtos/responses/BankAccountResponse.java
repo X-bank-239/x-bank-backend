@@ -5,10 +5,12 @@ import com.example.xbankbackend.enums.CurrencyType;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 public class BankAccountResponse {
-    private BigDecimal amount;
+    private UUID accountId;
+    private BigDecimal balance;
     private CurrencyType currency;
     private BankAccountType accountType;
 }
