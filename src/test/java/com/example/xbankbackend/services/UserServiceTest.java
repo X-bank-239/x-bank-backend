@@ -1,5 +1,6 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.enums.CurrencyType;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -128,13 +130,31 @@ public class UserServiceTest {
         user.setBirthdate(birthdate);
         user.setPassword(password);
 
-        when(userRepository.existsByEmail(email)).thenReturn(false);
+        List<BankAccount> emptyAccounts = List.of();
+        List<BankAccountResponse> emptyAccountResponses = List.of();
+        UserProfileResponse expectedResponse = UserProfileResponse.builder()
+                .userId(null)
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .birthdate(birthdate)
+                .accounts(emptyAccountResponses)
+                .build();
 
-        userService.create(user);
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(userRepository.getUser(any())).thenReturn(user);
+        when(bankAccountRepository.getBankAccounts(org.mockito.ArgumentMatchers.any(UUID.class))).thenReturn(emptyAccounts);
+        when(userProfileMapper.map(org.mockito.ArgumentMatchers.any(User.class), org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(expectedResponse);
+
+        UserProfileResponse result = userService.create(user);
 
         assertNotNull(user.getUserId());
+        assertNotNull(result);
 
         verify(userRepository).create(user);
+        verify(bankAccountRepository).getBankAccounts(user.getUserId());
+        verify(userProfileMapper).map(org.mockito.ArgumentMatchers.eq(user), org.mockito.ArgumentMatchers.eq(emptyAccounts));
     }
 
     // getUserId
@@ -223,9 +243,33 @@ public class UserServiceTest {
 
         List<BankAccount> bankAccounts = List.of(account1, account2);
 
+        BankAccountResponse accountResponse1 = new BankAccountResponse();
+        accountResponse1.setAccountId(account1.getAccountId());
+        accountResponse1.setAmount(account1.getBalance());
+        accountResponse1.setCurrency(account1.getCurrency());
+        accountResponse1.setAccountType(account1.getAccountType());
+
+        BankAccountResponse accountResponse2 = new BankAccountResponse();
+        accountResponse2.setAccountId(account2.getAccountId());
+        accountResponse2.setAmount(account2.getBalance());
+        accountResponse2.setCurrency(account2.getCurrency());
+        accountResponse2.setAccountType(account2.getAccountType());
+
+        List<BankAccountResponse> bankAccountResponses = List.of(accountResponse1, accountResponse2);
+
+        UserProfileResponse expectedResponse = UserProfileResponse.builder()
+                .userId(userId)
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .birthdate(birthdate)
+                .accounts(bankAccountResponses)
+                .build();
+
         when(userRepository.exists(userId)).thenReturn(true);
         when(userRepository.getUser(userId)).thenReturn(user);
         when(bankAccountRepository.getBankAccounts(userId)).thenReturn(bankAccounts);
+        when(userProfileMapper.map(user, bankAccounts)).thenReturn(expectedResponse);
 
         UserProfileResponse userProfileResponse = userService.getProfile(userId);
 

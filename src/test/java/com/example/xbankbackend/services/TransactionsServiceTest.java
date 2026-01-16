@@ -50,6 +50,7 @@ public class TransactionsServiceTest {
     @Test
     void validateDeposit_shouldThrowIfTransactionTypeIsNotDeposit() {
         UUID receiverId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -57,7 +58,10 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
 
     @Test
@@ -70,7 +74,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
 
     @Test
@@ -84,7 +90,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
 
     @Test
@@ -99,7 +107,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.deposit(transaction));
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
 
     @Test
@@ -113,13 +121,15 @@ public class TransactionsServiceTest {
         transaction.setAmount(BigDecimal.valueOf(-5000.0f));
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.getUserId(receiverId)).thenReturn(receiverId);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
 
     @Test
     void validateDeposit_shouldIncreaseBalance() {
         UUID receiverId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.DEPOSIT);
@@ -130,8 +140,9 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        transactionsService.deposit(transaction);
+        transactionsService.deposit(transaction, userId);
 
         verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0f));
     }
@@ -149,7 +160,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction, receiverId));
     }
 
     @Test
@@ -164,7 +177,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction, receiverId));
     }
 
     @Test
@@ -179,7 +194,9 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction, receiverId));
     }
 
     @Test
@@ -196,7 +213,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction));
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.transfer(transaction, senderId));
     }
 
     @Test
@@ -214,7 +231,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction));
+        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction,senderId));
     }
 
     @Test
@@ -233,13 +250,14 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
 
-        assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction));
+        assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction, senderId));
     }
 
     @Test
     void validateTransfer_shouldThrowIfAmountNotPositive() {
         UUID receiverId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.TRANSFER);
@@ -250,15 +268,16 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
-        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.getUserId(receiverId)).thenReturn(userId);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.transfer(transaction, senderId));
     }
 
     @Test
     void validateTransfer_shouldChangeBalance() {
         UUID receiverId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.TRANSFER);
@@ -270,10 +289,11 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
 
-        transactionsService.transfer(transaction);
+        transactionsService.transfer(transaction, userId);
 
         verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0f));
         verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
@@ -290,12 +310,16 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
     void validatePayment_shouldThrowIfSenderIdIsNull() {
+
         UUID senderId = null;
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -303,12 +327,16 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
     void validatePayment_shouldThrowIfReceiverIdIsNotNull() {
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -317,12 +345,16 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(bankAccountRepository.exists(any())).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, userId));
     }
 
     @Test
     void validatePayment_shouldThrowIfSenderIdNotFound() {
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -331,13 +363,15 @@ public class TransactionsServiceTest {
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.pay(transaction));
+        assertThrows(UserNotFoundException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
     void validatePayment_shouldThrowIfInsufficientFunds() {
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -347,13 +381,15 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction));
+        assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
     void validatePayment_shouldThrowIfAmountNotPositive() {
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -363,13 +399,15 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction));
+        assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
     void validatePayment_shouldDecreaseBalance() {
         UUID senderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         Transaction transaction = new Transaction();
         transaction.setTransactionType(TransactionType.PAYMENT);
@@ -379,8 +417,9 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        transactionsService.pay(transaction);
+        transactionsService.pay(transaction, userId);
 
         verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
     }
