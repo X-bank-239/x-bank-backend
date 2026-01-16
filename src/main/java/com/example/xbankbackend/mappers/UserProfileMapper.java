@@ -11,7 +11,10 @@ import java.util.List;
 @Component
 public class UserProfileMapper {
     public UserProfileResponse map(User user, List<BankAccount> account){
-        UserProfileResponse userProfileResponse = new UserProfileResponse().builder()
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        UserProfileResponse userProfileResponse = UserProfileResponse.builder()
                 .userId(user.getUserId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
