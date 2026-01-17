@@ -7,7 +7,6 @@ import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
 import com.example.xbankbackend.exceptions.UserIsNotABankAccountOwner;
-import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
@@ -117,13 +116,13 @@ public class TransactionsService {
         TransactionType transactionType = transfer.getTransactionType();
 
         if (!bankAccountRepository.exists(receiverId)) {
-            throw new UserNotFoundException("No such receiver Id " + receiverId);
+            throw new BankAccountNotFoundException("No such receiver Id " + receiverId);
         }
 
         UUID accountOwnerId = bankAccountRepository.getUserId(receiverId);
 
         if (!bankAccountRepository.exists(senderId)) {
-            throw new UserNotFoundException("No such sender Id " + senderId);
+            throw new BankAccountNotFoundException("No such sender Id " + senderId);
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -155,14 +154,14 @@ public class TransactionsService {
         UUID senderId = payment.getSenderId();
         BigDecimal amount = payment.getAmount();
         TransactionType transactionType = payment.getTransactionType();
-
-        if (!bankAccountRepository.exists(receiverId)) {
-            throw new UserNotFoundException("No such receiver Id " + receiverId);
-        }
+//
+//        if (!bankAccountRepository.exists(receiverId)) {
+//            throw new BankAccountNotFoundException("No such receiver Id " + receiverId);
+//        }
         UUID userReceiverId = bankAccountRepository.getUserId(payment.getReceiverId());
 
         if (!bankAccountRepository.exists(senderId)) {
-            throw new UserNotFoundException("No such sender Id " + senderId);
+            throw new BankAccountNotFoundException("No such sender Id " + senderId); // user to account
         }
 
         if (transactionType != TransactionType.PAYMENT) {

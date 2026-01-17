@@ -6,7 +6,6 @@ import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
-import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
@@ -231,7 +230,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.transfer(transaction,senderId));
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.transfer(transaction,senderId));
     }
 
     @Test
@@ -365,7 +364,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
-        assertThrows(UserNotFoundException.class, () -> transactionsService.pay(transaction, senderId));
+        assertThrows(BankAccountNotFoundException.class, () -> transactionsService.pay(transaction, senderId));
     }
 
     @Test
