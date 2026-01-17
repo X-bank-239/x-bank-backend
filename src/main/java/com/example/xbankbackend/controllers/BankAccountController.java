@@ -2,6 +2,7 @@ package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateBankAccountRequest;
 import com.example.xbankbackend.dtos.responses.BankAccountResponse;
+import com.example.xbankbackend.jwt.SecurityUtil;
 import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.services.BankAccountService;
@@ -26,8 +27,11 @@ public class BankAccountController {
 
     @PostMapping("/create")
     public ResponseEntity<BankAccount> create(@Valid @RequestBody CreateBankAccountRequest bankAccountRequest) {
+        UUID userId = SecurityUtil.getCurrentUserId();
+
         log.info("Creating bank account: {}", bankAccountRequest);
         BankAccount bankAccount = bankAccountMapper.requestToAccount(bankAccountRequest);
+        bankAccount.setUserId(userId);
         bankAccountService.create(bankAccount);
         return ResponseEntity.status(HttpStatus.CREATED).body(bankAccount);
     }

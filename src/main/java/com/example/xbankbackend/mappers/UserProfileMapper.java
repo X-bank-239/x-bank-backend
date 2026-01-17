@@ -11,7 +11,11 @@ import java.util.List;
 @Component
 public class UserProfileMapper {
     public UserProfileResponse map(User user, List<BankAccount> account){
-        UserProfileResponse userProfileResponse = new UserProfileResponse().builder()
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        UserProfileResponse userProfileResponse = UserProfileResponse.builder()
+                .userId(user.getUserId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
@@ -19,6 +23,7 @@ public class UserProfileMapper {
                 .accounts(account.stream().map(
                         bankAccount -> {
                             BankAccountResponse bankAccountResponse = new BankAccountResponse();
+                            bankAccountResponse.setAccountId(bankAccount.getAccountId());
                             bankAccountResponse.setBalance(bankAccount.getBalance());
                             bankAccountResponse.setCurrency(bankAccount.getCurrency());
                             bankAccountResponse.setAccountType(bankAccount.getAccountType());

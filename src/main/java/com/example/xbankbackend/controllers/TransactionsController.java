@@ -2,8 +2,8 @@ package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateTransactionRequest;
 import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
+import com.example.xbankbackend.jwt.SecurityUtil;
 import com.example.xbankbackend.mappers.TransactionMapper;
-import com.example.xbankbackend.mappers.UserMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.services.TransactionsService;
 import jakarta.validation.Valid;
@@ -26,27 +26,30 @@ public class TransactionsController {
     @PostMapping("/deposit")
     public ResponseEntity<Transaction> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing deposit: {}", transactionRequest);
+        UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction deposit = transactionMapper.requestToTransaction(transactionRequest);
-        transactionsService.deposit(deposit);
+        transactionsService.deposit(deposit, userId);
         return ResponseEntity.ok(deposit);
     }
 
     @PostMapping("/transfer")
     public ResponseEntity<Transaction> transfer(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing transfer: {}", transactionRequest);
+        UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction transfer = transactionMapper.requestToTransaction(transactionRequest);
-        transactionsService.transfer(transfer);
+        transactionsService.transfer(transfer, userId);
         return ResponseEntity.ok(transfer);
     }
 
     @PostMapping("/payment")
     public ResponseEntity<Transaction> payment(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing payment: {}", transactionRequest);
+        UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction payment = transactionMapper.requestToTransaction(transactionRequest);
-        transactionsService.pay(payment);
+        transactionsService.pay(payment, userId);
         return ResponseEntity.ok(payment);
     }
 

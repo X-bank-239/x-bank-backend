@@ -27,4 +27,7 @@ public class User {
 
     @NotNull(message = "birthdate cannot be null")
     private Date birthdate;
+
+    @NotNull(message = "password cannot be null")
+    private String password;
 }

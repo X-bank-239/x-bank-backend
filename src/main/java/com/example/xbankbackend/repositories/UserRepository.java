@@ -17,12 +17,13 @@ public class UserRepository {
 
     public void create(User user) {
         dsl.insertInto(USERS)
-                .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate())
+                .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate(), user.getPassword())
                 .execute();
     }
 
     public User getUser(UUID userId) {
-        return dsl.selectFrom(USERS)
+        return dsl.select(USERS.USER_ID, USERS.EMAIL, USERS.BIRTHDATE, USERS.FIRST_NAME, USERS.LAST_NAME)
+                .from(USERS)
                 .where(USERS.USER_ID.eq(userId))
                 .fetchOne()
                 .into(User.class);
@@ -48,5 +49,12 @@ public class UserRepository {
                 .where(USERS.USER_ID.eq(userId))
                 .fetch()
                 .size() == 1;
+    }
+
+    public String getHashedPassword(UUID userId) {
+         return dsl.select(USERS.PASSWORD)
+                 .from(USERS)
+                .where(USERS.USER_ID.eq(userId))
+                .fetch().toString();
     }
 }
