@@ -46,10 +46,10 @@ public class CurrencyRateService {
 
     public BigDecimal convert(CurrencyType from, CurrencyType to, BigDecimal amount) {
         BigDecimal fromRate = BigDecimal.ONE, toRate = BigDecimal.ONE;
-        if (from.toString() != "RUB") {
+        if (from != CurrencyType.RUB) {
             fromRate = currencyRateRepository.findLatestByCurrency(from).getRate();
         }
-        if (to.toString() != "RUB") {
+        if (to != CurrencyType.RUB) {
             toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
         }
         return fromRate.divide(toRate, 4, RoundingMode.HALF_UP).multiply(amount);

@@ -39,6 +39,13 @@ public class BankAccountRepository {
                 .execute();
     }
 
+    public BankAccount get(UUID accountId) {
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .fetchOne()
+                .into(BankAccount.class);
+    }
+
     public boolean exists(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))

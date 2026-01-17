@@ -13,7 +13,7 @@ import java.util.UUID;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class BankAccountResponse {
     private UUID accountId;
-    private BigDecimal amount;
+    private BigDecimal balance;
     private CurrencyType currency;
     private BankAccountType accountType;
 }

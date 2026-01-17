@@ -2,6 +2,7 @@ package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.AuthUserRequest;
 import com.example.xbankbackend.dtos.requests.CreateUserRequest;
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.jwt.JwtUtil;
 import com.example.xbankbackend.mappers.UserMapper;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Log4j2
@@ -52,6 +54,13 @@ public class UserController {
                     .build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @GetMapping("/get-accounts/{userId}")
+    public ResponseEntity<List<BankAccountResponse>> getAccounts(@PathVariable UUID userId) {
+        log.info("Getting accounts for user with id {}", userId);
+        List<BankAccountResponse> bankAccounts = userService.getAccounts(userId);
+        return ResponseEntity.ok(bankAccounts);
     }
 
     @GetMapping("/get-profile/{userId}")

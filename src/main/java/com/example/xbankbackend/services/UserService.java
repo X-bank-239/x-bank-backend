@@ -1,10 +1,12 @@
 package com.example.xbankbackend.services;
 
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
 import com.example.xbankbackend.jwt.JwtUtil;
+import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.mappers.UserProfileMapper;
 import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.User;
@@ -32,6 +34,7 @@ public class UserService {
     private UserProfileMapper userProfileMapper;
     private JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private BankAccountMapper bankAccountMapper;
 
     public UserProfileResponse create(@Valid User user) {
         if (!isValidEmail(user.getEmail())) {
@@ -79,9 +82,18 @@ public class UserService {
         User user = userRepository.getUser(uuid);
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(uuid);
 
-        UserProfileResponse userProfileResponse = userProfileMapper.map(user, accounts);
+        UserProfileResponse userProfileResponse = userProfileMapper.map(user,accounts);
 
         return userProfileResponse;
+    }
+
+    public List<BankAccountResponse> getAccounts(UUID userId) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " not found");
+        }
+        List<BankAccount> bankAccounts = bankAccountRepository.getBankAccounts(userId);
+        System.out.println(bankAccounts);
+        return bankAccountMapper.accountsToResponses(bankAccounts);
     }
 
     public UserProfileResponse getProfileByEmail(String email) {

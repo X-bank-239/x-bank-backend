@@ -1,6 +1,7 @@
 package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateBankAccountRequest;
+import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.jwt.SecurityUtil;
 import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.models.BankAccount;
@@ -29,11 +30,16 @@ public class BankAccountController {
         UUID userId = SecurityUtil.getCurrentUserId();
 
         log.info("Creating bank account: {}", bankAccountRequest);
-        log.info("User ID: {}", userId);
         BankAccount bankAccount = bankAccountMapper.requestToAccount(bankAccountRequest);
         bankAccount.setUserId(userId);
         bankAccountService.create(bankAccount);
         return ResponseEntity.status(HttpStatus.CREATED).body(bankAccount);
     }
 
+    @GetMapping("/get/{accountId}")
+    public ResponseEntity<BankAccountResponse> get(@PathVariable UUID accountId) {
+        log.info("Getting account with id {}", accountId);
+        BankAccountResponse bankAccount = bankAccountService.get(accountId);
+        return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
+    }
 }

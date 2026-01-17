@@ -245,13 +245,13 @@ public class UserServiceTest {
 
         BankAccountResponse accountResponse1 = new BankAccountResponse();
         accountResponse1.setAccountId(account1.getAccountId());
-        accountResponse1.setAmount(account1.getBalance());
+        accountResponse1.setBalance(account1.getBalance());
         accountResponse1.setCurrency(account1.getCurrency());
         accountResponse1.setAccountType(account1.getAccountType());
 
         BankAccountResponse accountResponse2 = new BankAccountResponse();
         accountResponse2.setAccountId(account2.getAccountId());
-        accountResponse2.setAmount(account2.getBalance());
+        accountResponse2.setBalance(account2.getBalance());
         accountResponse2.setCurrency(account2.getCurrency());
         accountResponse2.setAccountType(account2.getAccountType());
 
@@ -280,11 +280,11 @@ public class UserServiceTest {
 
         assertEquals(2, userProfileResponse.getAccounts().size());
 
-        assertEquals(BigDecimal.valueOf(100.0), userProfileResponse.getAccounts().get(0).getAmount());
+        assertEquals(BigDecimal.valueOf(100.0), userProfileResponse.getAccounts().get(0).getBalance());
         assertEquals(CurrencyType.RUB, userProfileResponse.getAccounts().get(0).getCurrency());
         assertEquals(BankAccountType.CREDIT, userProfileResponse.getAccounts().get(0).getAccountType());
 
-        assertEquals(BigDecimal.valueOf(5000.0), userProfileResponse.getAccounts().get(1).getAmount());
+        assertEquals(BigDecimal.valueOf(5000.0), userProfileResponse.getAccounts().get(1).getBalance());
         assertEquals(CurrencyType.CNY, userProfileResponse.getAccounts().get(1).getCurrency());
         assertEquals(BankAccountType.DEBIT, userProfileResponse.getAccounts().get(1).getAccountType());
     }

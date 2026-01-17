@@ -24,7 +24,7 @@ public class UserProfileMapper {
                         bankAccount -> {
                             BankAccountResponse bankAccountResponse = new BankAccountResponse();
                             bankAccountResponse.setAccountId(bankAccount.getAccountId());
-                            bankAccountResponse.setAmount(bankAccount.getBalance());
+                            bankAccountResponse.setBalance(bankAccount.getBalance());
                             bankAccountResponse.setCurrency(bankAccount.getCurrency());
                             bankAccountResponse.setAccountType(bankAccount.getAccountType());
                             return bankAccountResponse;
