@@ -14,7 +14,6 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -63,8 +62,9 @@ public class UserService {
             throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too old");
         }
 
-        Argon2PasswordEncoder arg2SpringSecurity = new Argon2PasswordEncoder(16, 32, 1, 60000, 10);
-        String hashedPassword = arg2SpringSecurity.encode(user.getPassword());
+        // Хешируем пароль через общий PasswordEncoder,
+        // чтобы логин использовал тот же самый алгоритм.
+        String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
 
         user.setUserId(UUID.randomUUID());
@@ -121,13 +121,13 @@ public class UserService {
         }
 
         User user = userRepository.getUserByEmail(email);
-        String password = userRepository.getHashedPassword(user.getUserId());
+        String storedHash = user.getPassword();
 
-        if (password != "" && passwordEncoder.matches(input_password, user.getPassword())) {
-            return true;
-        } else {
+        if (storedHash == null || storedHash.isBlank()) {
             return false;
         }
+
+        return passwordEncoder.matches(input_password, storedHash);
     }
 
     private boolean isValidEmail(String email) {
