@@ -6,6 +6,7 @@ import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.jwt.JwtUtil;
 import com.example.xbankbackend.mappers.UserMapper;
+import com.example.xbankbackend.models.AuthResponse;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.services.UserService;
 import lombok.AllArgsConstructor;
@@ -40,18 +41,18 @@ public class UserController {
         log.info("Issued JWT for user {}", createdUser.getUserId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .header("Authorization", "Bearer " + token)
                 .body(createdUser);
     }
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthUserRequest user) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthUserRequest user) {
         log.info("Logging user: {}", user.getEmail());
         if (userService.authenticated(user.getEmail(), user.getPassword())) {
             String token = userService.generateTokenByEmail(user.getEmail());
+            AuthResponse response =  new AuthResponse();
+            response.setToken(token);
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .header("Authorization", "Bearer " + token)
-                    .build();
+                    .body(response);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
