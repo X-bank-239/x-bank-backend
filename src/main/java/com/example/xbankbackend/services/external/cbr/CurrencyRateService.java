@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
@@ -53,5 +54,13 @@ public class CurrencyRateService {
             toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
         }
         return fromRate.divide(toRate, 4, RoundingMode.HALF_UP).multiply(amount);
+    }
+
+    public List<CurrencyRate> getLatestRates() {
+        return currencyRateRepository.findByDateOrderByCurrencyAsc(LocalDate.now());
+    }
+
+    public CurrencyRate getLatestRateByCurrency(CurrencyType currency) {
+        return currencyRateRepository.findLatestByCurrency(currency);
     }
 }
