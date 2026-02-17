@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<jooq.version>3.20.8</jooq.version>
 	</properties>
 	<dependencies>
 		<!--	DB	   -->
@@ -186,39 +187,70 @@
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
 				<version>${jooq.version}</version>
-				<!-- <executions>
+				<executions>
 					<execution>
 						<id>generate-jooq</id>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 					</execution>
-				</executions> -->
+				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>org.postgresql</groupId>
-						<artifactId>postgresql</artifactId>
-						<version>42.7.3</version>
+						<groupId>org.jooq</groupId>
+						<artifactId>jooq-meta-extensions</artifactId>
+						<version>${jooq.version}</version>
 					</dependency>
 				</dependencies>
 				<configuration>
-					<jdbc>
-						<driver>org.postgresql.Driver</driver>
-						<url>jdbc:postgresql://127.0.0.1:5432/postgres</url>
-						<user>postgres</user>
-						<password>mysecretpassword</password>
-					</jdbc>
 					<generator>
 						<database>
-							<name>org.jooq.meta.postgres.PostgresDatabase</name>
-							<inputSchema>public</inputSchema>
+							<name>org.jooq.meta.extensions.ddl.DDLDatabase</name>
+							<properties>
+								<property>
+									<key>scripts</key>
+									<value>src/main/resources/db/migration/*.sql</value>
+								</property>
+								<property>
+									<key>sort</key>
+									<value>flyway</value>
+								</property>
+								<property>
+									<key>unqualifiedSchema</key>
+									<value>public</value>
+								</property>
+								<property>
+									<key>defaultNameCase</key>
+									<value>lower</value>
+								</property>
+							</properties>
 						</database>
 						<target>
 							<packageName>com.example.xbankbackend.generated</packageName>
-							<directory>src/main/java/</directory>
+							<directory>${project.basedir}/target/generated-sources/jooq</directory>
 						</target>
 					</generator>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<id>add-jooq-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.basedir}/target/generated-sources/jooq</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.flywaydb</groupId>
