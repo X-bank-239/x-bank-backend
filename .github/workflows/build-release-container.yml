@@ -96,7 +96,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker pull ${{ env.REGISTRY }}/{${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]'}:latest
             cd x-bank
             docker compose down || true
             docker compose up --build -d || true
