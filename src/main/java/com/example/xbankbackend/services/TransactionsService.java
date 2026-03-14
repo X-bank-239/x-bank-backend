@@ -25,6 +25,7 @@ import java.util.UUID;
 public class TransactionsService {
 
     private CurrencyRateService currencyRateService;
+    private FeeService feeService;
     private TransactionsRepository transactionsRepository;
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
@@ -58,13 +59,13 @@ public class TransactionsService {
         transfer.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(transfer);
-        bankAccountRepository.decreaseBalance(senderId, amount);
+        bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
         bankAccountRepository.increaseBalance(receiverId, convertedAmount);
     }
 
     public void pay(Transaction payment, UUID authenticatedUserId) {
         validatePayment(payment, authenticatedUserId);
-        UUID ownerOfBankAccount = bankAccountRepository.getUserId(payment.getReceiverId());
+
         UUID senderId = payment.getSenderId();
         BigDecimal amount = payment.getAmount();
 
@@ -72,7 +73,7 @@ public class TransactionsService {
         payment.setTransactionDate(OffsetDateTime.now());
 
         transactionsRepository.addTransaction(payment);
-        bankAccountRepository.decreaseBalance(senderId, amount);
+        bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
     }
 
     private void validateDeposit(Transaction deposit, UUID authenticatedUserId) {
@@ -138,7 +139,7 @@ public class TransactionsService {
         }
 
 
-        if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
+        if (feeService.applyBaseFee(amount).compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
@@ -154,11 +155,6 @@ public class TransactionsService {
         UUID senderId = payment.getSenderId();
         BigDecimal amount = payment.getAmount();
         TransactionType transactionType = payment.getTransactionType();
-//
-//        if (!bankAccountRepository.exists(receiverId)) {
-//            throw new BankAccountNotFoundException("No such receiver Id " + receiverId);
-//        }
-        UUID userReceiverId = bankAccountRepository.getUserId(payment.getReceiverId());
 
         if (!bankAccountRepository.exists(senderId)) {
             throw new BankAccountNotFoundException("No such sender Id " + senderId); // user to account
@@ -176,16 +172,12 @@ public class TransactionsService {
             throw new IllegalArgumentException("ReceiverId must be null (Payment)");
         }
 
-        if (amount.compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
+        if (feeService.applyBaseFee(amount).compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
-        }
-
-        if (!authenticatedUserId.equals(userReceiverId) ) {
-            throw new UserIsNotABankAccountOwner("Authenticated user is not the bank account owner");
         }
     }
 

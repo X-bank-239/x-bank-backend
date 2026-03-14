@@ -1,0 +1,3 @@
+ALTER TABLE currency_rates ALTER COLUMN rate TYPE NUMERIC(19, 2);
+ALTER TABLE bank_accounts ALTER COLUMN balance TYPE NUMERIC(19, 2);
+ALTER TABLE transactions ALTER COLUMN amount TYPE NUMERIC(19, 2);
