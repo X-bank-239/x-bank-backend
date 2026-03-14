@@ -42,6 +42,9 @@ public class TransactionsServiceTest {
     @Mock
     private CurrencyRateService currencyRateService;
 
+    @Mock
+    private FeeService feeService;
+
     @InjectMocks
     private TransactionsService transactionsService;
 
@@ -248,6 +251,27 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
+
+        assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction, senderId));
+    }
+
+    @Test
+    void validateTransfer_shouldThrowIfInsufficientFundsWithBaseFee() {
+        UUID receiverId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TransactionType.TRANSFER);
+        transaction.setReceiverId(receiverId);
+        transaction.setSenderId(senderId);
+        transaction.setCurrency(CurrencyType.RUB);
+        transaction.setAmount(BigDecimal.valueOf(5000.0f));
+
+        when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.exists(senderId)).thenReturn(true);
+        when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(5000.0f));
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction, senderId));
     }
@@ -291,11 +315,12 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         transactionsService.transfer(transaction, userId);
 
         verify(bankAccountRepository).increaseBalance(receiverId, BigDecimal.valueOf(5000.0f));
-        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
+        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5075.0f));
     }
 
     // validatePayment
@@ -326,7 +351,6 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
         when(bankAccountRepository.exists(any())).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
@@ -344,7 +368,6 @@ public class TransactionsServiceTest {
         transaction.setCurrency(CurrencyType.RUB);
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
         when(bankAccountRepository.exists(any())).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, userId));
@@ -362,7 +385,6 @@ public class TransactionsServiceTest {
         transaction.setAmount(BigDecimal.valueOf(5000.0f));
 
         when(bankAccountRepository.exists(senderId)).thenReturn(false);
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
         assertThrows(BankAccountNotFoundException.class, () -> transactionsService.pay(transaction, senderId));
     }
@@ -380,7 +402,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction, senderId));
     }
@@ -398,7 +420,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(-5075.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
     }
@@ -416,11 +438,11 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
-        when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         transactionsService.pay(transaction, userId);
 
-        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5000.0f));
+        verify(bankAccountRepository).decreaseBalance(senderId, BigDecimal.valueOf(5075.0f));
     }
 
     // getRecent
