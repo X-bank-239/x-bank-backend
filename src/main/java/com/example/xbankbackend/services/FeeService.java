@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @Service
 public class FeeService {
 
-    @Value("${application.base-fee}")
+    @Value("${application.base-fee:0.015}")
     private Float baseFee;
 
     public BigDecimal applyBaseFee(BigDecimal amount) {

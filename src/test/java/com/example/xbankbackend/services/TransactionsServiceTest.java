@@ -45,6 +45,9 @@ public class TransactionsServiceTest {
     @Mock
     private FeeService feeService;
 
+    @Mock
+    private OwnershipService ownershipService;
+
     @InjectMocks
     private TransactionsService transactionsService;
 
@@ -62,6 +65,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(any())).thenReturn(true);
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
@@ -124,6 +128,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.getUserId(receiverId)).thenReturn(receiverId);
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.deposit(transaction, receiverId));
     }
@@ -141,6 +146,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
 
@@ -251,6 +257,8 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction, senderId));
@@ -271,6 +279,8 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.exists(receiverId)).thenReturn(true);
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(5000.0f));
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.transfer(transaction, senderId));
@@ -314,6 +324,8 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
         when(bankAccountRepository.getCurrency(receiverId)).thenReturn(CurrencyType.RUB);
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
+        when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
@@ -402,6 +414,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(4000.0f));
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         assertThrows(InsufficientFundsException.class, () -> transactionsService.pay(transaction, senderId));
@@ -420,6 +433,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(-5075.0f));
 
         assertThrows(IllegalArgumentException.class, () -> transactionsService.pay(transaction, senderId));
@@ -438,6 +452,7 @@ public class TransactionsServiceTest {
 
         when(bankAccountRepository.exists(senderId)).thenReturn(true);
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
+        when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
 
         transactionsService.pay(transaction, userId);
