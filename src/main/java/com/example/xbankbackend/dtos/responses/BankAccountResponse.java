@@ -16,4 +16,5 @@ public class BankAccountResponse {
     private BigDecimal balance;
     private CurrencyType currency;
     private BankAccountType accountType;
+    private Boolean active;
 }

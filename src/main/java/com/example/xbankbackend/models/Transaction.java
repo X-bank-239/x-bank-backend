@@ -1,6 +1,7 @@
 package com.example.xbankbackend.models;
 
 import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.enums.TransactionStatus;
 import com.example.xbankbackend.enums.TransactionType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -29,4 +30,5 @@ public class Transaction {
     private CurrencyType currency;
     private OffsetDateTime transactionDate;
     private String comment;
+    private TransactionStatus status;
 }

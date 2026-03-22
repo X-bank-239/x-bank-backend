@@ -20,6 +20,8 @@ public class UserProfileMapper {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .birthdate(user.getBirthdate())
+                .role(user.getRole())
+                .active(user.getActive())
                 .accounts(account.stream().map(
                         bankAccount -> {
                             BankAccountResponse bankAccountResponse = new BankAccountResponse();
@@ -27,6 +29,7 @@ public class UserProfileMapper {
                             bankAccountResponse.setBalance(bankAccount.getBalance());
                             bankAccountResponse.setCurrency(bankAccount.getCurrency());
                             bankAccountResponse.setAccountType(bankAccount.getAccountType());
+                            bankAccountResponse.setActive(bankAccount.getActive());
                             return bankAccountResponse;
                         }
                 ).toList())

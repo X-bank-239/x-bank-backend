@@ -1,5 +1,6 @@
 package com.example.xbankbackend.repositories;
 
+import com.example.xbankbackend.generated.enums.TransactionStatus;
 import com.example.xbankbackend.models.Transaction;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -18,7 +19,28 @@ public class TransactionsRepository {
 
     public void addTransaction(Transaction transaction) {
         dsl.insertInto(TRANSACTIONS)
-                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getTransactionDate(), transaction.getTransactionType(), transaction.getComment())
+                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getTransactionDate(), transaction.getTransactionType(), transaction.getComment(), transaction.getStatus())
+                .execute();
+    }
+
+    public Transaction get(UUID transactionId) {
+        return dsl.selectFrom(TRANSACTIONS)
+                .where(TRANSACTIONS.TRANSACTION_ID.eq(transactionId))
+                .fetchOne()
+                .into(Transaction.class);
+    }
+
+    public boolean exists(UUID transactionId) {
+        return dsl.selectFrom(TRANSACTIONS)
+                .where(TRANSACTIONS.TRANSACTION_ID.eq(transactionId))
+                .fetch()
+                .size() == 1;
+    }
+
+    public void cancel(UUID transactionId) {
+        dsl.update(TRANSACTIONS)
+                .set(TRANSACTIONS.STATUS, TransactionStatus.CANCELLED)
+                .where(TRANSACTIONS.TRANSACTION_ID.eq(transactionId))
                 .execute();
     }
 

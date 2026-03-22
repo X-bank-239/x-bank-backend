@@ -37,4 +37,9 @@ public class CbrController {
 
         return ResponseEntity.status(HttpStatus.OK).body(rate);
     }
+
+    @GetMapping("/supported")
+    public ResponseEntity<CurrencyType[]> getSupportedCurrencies() {
+        return ResponseEntity.status(HttpStatus.OK).body(CurrencyType.values());
+    }
 }

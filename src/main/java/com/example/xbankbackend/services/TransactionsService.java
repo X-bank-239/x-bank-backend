@@ -3,16 +3,20 @@ package com.example.xbankbackend.services;
 import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
 import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.enums.TransactionStatus;
 import com.example.xbankbackend.enums.TransactionType;
 import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
 import com.example.xbankbackend.exceptions.InsufficientFundsException;
+import com.example.xbankbackend.exceptions.TransactionNotFoundException;
 import com.example.xbankbackend.exceptions.UserIsNotABankAccountOwner;
+import com.example.xbankbackend.mappers.TransactionMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,6 +33,7 @@ public class TransactionsService {
     private TransactionsRepository transactionsRepository;
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
+    private TransactionMapper transactionMapper;
 
     public void deposit(Transaction deposit, UUID authenticatedUserId) {
         validateDeposit(deposit, authenticatedUserId);
@@ -40,6 +45,7 @@ public class TransactionsService {
 
         deposit.setTransactionId(UUID.randomUUID());
         deposit.setTransactionDate(OffsetDateTime.now());
+        deposit.setStatus(TransactionStatus.COMPLETED);
 
         transactionsRepository.addTransaction(deposit);
         bankAccountRepository.increaseBalance(receiverId, convertedAmount);
@@ -57,6 +63,7 @@ public class TransactionsService {
 
         transfer.setTransactionId(UUID.randomUUID());
         transfer.setTransactionDate(OffsetDateTime.now());
+        transfer.setStatus(TransactionStatus.COMPLETED);
 
         transactionsRepository.addTransaction(transfer);
         bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
@@ -71,6 +78,7 @@ public class TransactionsService {
 
         payment.setTransactionId(UUID.randomUUID());
         payment.setTransactionDate(OffsetDateTime.now());
+        payment.setStatus(TransactionStatus.COMPLETED);
 
         transactionsRepository.addTransaction(payment);
         bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
@@ -94,6 +102,10 @@ public class TransactionsService {
         }
         if (senderId != null) {
             throw new IllegalArgumentException("SenderId must be null (Deposit)");
+        }
+
+        if (!bankAccountRepository.isActive(receiverId)) {
+            throw new AccessDeniedException("Bank account with id " + receiverId + " is deactivated");
         }
 
         if (transactionType != TransactionType.DEPOSIT) {
@@ -138,6 +150,12 @@ public class TransactionsService {
             throw new IllegalArgumentException("Both SenderId and userId are required (Transfer)");
         }
 
+        if (!bankAccountRepository.isActive(senderId)) {
+            throw new AccessDeniedException("Bank account with id " + senderId + " is deactivated");
+        }
+        if (!bankAccountRepository.isActive(receiverId)) {
+            throw new AccessDeniedException("Bank account with id " + receiverId + " is deactivated");
+        }
 
         if (feeService.applyBaseFee(amount).compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
@@ -172,6 +190,10 @@ public class TransactionsService {
             throw new IllegalArgumentException("ReceiverId must be null (Payment)");
         }
 
+        if (!bankAccountRepository.isActive(senderId)) {
+            throw new AccessDeniedException("Bank account with id " + senderId + " is deactivated");
+        }
+
         if (feeService.applyBaseFee(amount).compareTo(bankAccountRepository.getBalance(senderId)) > 0) {
             throw new InsufficientFundsException("Sender balance must be greater than transaction amount");
         }
@@ -179,6 +201,33 @@ public class TransactionsService {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
+    }
+
+    public TransactionResponse getTransaction(UUID transactionId) {
+        if (!transactionsRepository.exists(transactionId)) {
+            throw new TransactionNotFoundException("Transaction with id " + transactionId + " not found");
+        }
+        Transaction transaction = transactionsRepository.get(transactionId);
+        return transactionMapper.transactionToResponse(transaction);
+    }
+
+    public void cancelTransaction(UUID transactionId) {
+        if (!transactionsRepository.exists(transactionId)) {
+            throw new TransactionNotFoundException("Transaction with id " + transactionId + " not found");
+        }
+        Transaction transaction = transactionsRepository.get(transactionId);
+        UUID senderId = transaction.getSenderId(), receiverId = transaction.getReceiverId();
+
+        if (senderId != null) {
+            bankAccountRepository.increaseBalance(senderId, transaction.getAmount());
+        }
+        if (receiverId != null) {
+            CurrencyType receiverCurrency = bankAccountRepository.getCurrency(receiverId);
+            BigDecimal convertedAmount = currencyRateService.convert(transaction.getCurrency(), receiverCurrency, transaction.getAmount());
+            bankAccountRepository.decreaseBalance(receiverId, convertedAmount);
+        }
+
+        transactionsRepository.cancel(transactionId);
     }
 
     public RecentTransactionsResponse getRecent(UUID accountId, int page, int size) {

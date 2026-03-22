@@ -26,4 +26,6 @@ public class BankAccount {
 
     @NotNull(message = "accountType cannot be null")
     private BankAccountType accountType;
+
+    private Boolean active;
 }

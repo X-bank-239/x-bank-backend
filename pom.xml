@@ -216,10 +216,10 @@
 									<key>sort</key>
 									<value>flyway</value>
 								</property>
-								<property>
-									<key>unqualifiedSchema</key>
-									<value>public</value>
-								</property>
+<!--								<property>-->
+<!--									<key>unqualifiedSchema</key>-->
+<!--									<value>public</value>-->
+<!--								</property>-->
 								<property>
 									<key>defaultNameCase</key>
 									<value>lower</value>
