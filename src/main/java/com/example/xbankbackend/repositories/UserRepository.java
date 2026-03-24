@@ -17,13 +17,12 @@ public class UserRepository {
 
     public void create(User user) {
         dsl.insertInto(USERS)
-                .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate(), user.getPassword())
+                .values(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getBirthdate(), user.getPassword(), user.getRole(), user.getActive())
                 .execute();
     }
 
     public User getUser(UUID userId) {
-        return dsl.select(USERS.USER_ID, USERS.EMAIL, USERS.BIRTHDATE, USERS.FIRST_NAME, USERS.LAST_NAME)
-                .from(USERS)
+        return dsl.selectFrom(USERS)
                 .where(USERS.USER_ID.eq(userId))
                 .fetchOne()
                 .into(User.class);
@@ -51,10 +50,25 @@ public class UserRepository {
                 .size() == 1;
     }
 
+    public void updatePassword(UUID userId, String hashedPassword) {
+        dsl.update(USERS)
+                .set(USERS.PASSWORD, hashedPassword)
+                .where(USERS.USER_ID.eq(userId))
+                .execute();
+    }
+
+    public void block(UUID userId) {
+        dsl.update(USERS)
+                .set(USERS.ACTIVE, false)
+                .where(USERS.USER_ID.eq(userId))
+                .execute();
+    }
+
     public String getHashedPassword(UUID userId) {
          return dsl.select(USERS.PASSWORD)
                  .from(USERS)
-                .where(USERS.USER_ID.eq(userId))
-                .fetch().toString();
+                 .where(USERS.USER_ID.eq(userId))
+                 .fetchOne()
+                 .into(String.class);
     }
 }

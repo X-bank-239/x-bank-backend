@@ -21,8 +21,23 @@ public class BankAccountRepository {
 
     public void create(BankAccount bankAccount) {
         dsl.insertInto(BANK_ACCOUNTS)
-                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getBalance(), bankAccount.getCurrency(), bankAccount.getAccountType())
+                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getBalance(), bankAccount.getCurrency(), bankAccount.getAccountType(), bankAccount.getActive())
                 .execute();
+    }
+
+    public void deactivate(UUID accountId) {
+        dsl.update(BANK_ACCOUNTS)
+                .set(BANK_ACCOUNTS.ACTIVE, false)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .execute();
+    }
+
+    public boolean isActive(UUID accountId) {
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .and(BANK_ACCOUNTS.ACTIVE)
+                .fetch()
+                .size() == 1;
     }
 
     public void increaseBalance(UUID accountId, BigDecimal amount) {
@@ -74,11 +89,11 @@ public class BankAccountRepository {
                 .getValue(BANK_ACCOUNTS.BALANCE, BigDecimal.class);
     }
 
-    public List<BankAccount> getBankAccounts(UUID accountId) {
+    public List<BankAccount> getBankAccounts(UUID userId) {
         return dsl.select()
                 .from(BANK_ACCOUNTS)
                 .join(USERS).on(BANK_ACCOUNTS.USER_ID.eq(USERS.USER_ID))
-                .where(USERS.USER_ID.eq(accountId))
+                .where(USERS.USER_ID.eq(userId))
                 .fetch()
                 .into(BankAccount.class);
     }

@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -27,6 +28,7 @@ public class BankAccountService {
         }
         bankAccount.setBalance(BigDecimal.ZERO);
         bankAccount.setAccountId(UUID.randomUUID());
+        bankAccount.setActive(true);
         bankAccountRepository.create(bankAccount);
     }
 
@@ -36,5 +38,20 @@ public class BankAccountService {
         }
         BankAccount bankAccount = bankAccountRepository.get(accountId);
         return bankAccountMapper.accountToResponse(bankAccount);
+    }
+
+    public List<BankAccountResponse> getAccountsByUser(UUID userId) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " does not exist");
+        }
+        List<BankAccount> bankAccounts = bankAccountRepository.getBankAccounts(userId);
+        return bankAccountMapper.accountsToResponses(bankAccounts);
+    }
+
+    public void deactivateAccount(UUID accountId) {
+        if (!bankAccountRepository.exists(accountId)) {
+            throw new BankAccountNotFoundException("Account with UUID " + accountId + " does not exist");
+        }
+        bankAccountRepository.deactivate(accountId);
     }
 }

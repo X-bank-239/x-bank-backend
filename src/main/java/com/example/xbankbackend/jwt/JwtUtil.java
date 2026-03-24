@@ -26,10 +26,11 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(UUID userId) {
+    public String generateToken(UUID userId, String role) {
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .claim("userId", userId.toString())
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -39,6 +40,10 @@ public class JwtUtil {
     public UUID extractUserId(String token) {
         String id = extractAllClaims(token).get("userId", String.class);
         return id != null ? UUID.fromString(id) : null;
+    }
+
+    public String extractUserRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
     }
 
     private Claims extractAllClaims(String token) {

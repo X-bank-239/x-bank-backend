@@ -1,5 +1,6 @@
 package com.example.xbankbackend.dtos.responses;
 
+import com.example.xbankbackend.enums.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,8 @@ public class UserProfileResponse {
     private String lastName;
     private String email;
     private Date birthdate;
+    private UserRole role;
+    private Boolean active;
 
     private List<BankAccountResponse> accounts;
 }

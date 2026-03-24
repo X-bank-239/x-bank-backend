@@ -2,6 +2,7 @@ package com.example.xbankbackend.controllers;
 
 import com.example.xbankbackend.dtos.requests.CreateTransactionRequest;
 import com.example.xbankbackend.dtos.responses.RecentTransactionsResponse;
+import com.example.xbankbackend.dtos.responses.TransactionResponse;
 import com.example.xbankbackend.jwt.SecurityUtil;
 import com.example.xbankbackend.mappers.TransactionMapper;
 import com.example.xbankbackend.models.Transaction;
@@ -9,7 +10,10 @@ import com.example.xbankbackend.services.TransactionsService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -53,12 +57,33 @@ public class TransactionsController {
         return ResponseEntity.ok(payment);
     }
 
-    @GetMapping("/get-recent/{accountId}")
+    // CURRENT USER or ADMIN
+
+    @GetMapping("/get/{accountId}")
+    @PreAuthorize("hasRole('ADMIN') or @ownershipService.isAccountOwner(#accountId, authentication)")
     public ResponseEntity<RecentTransactionsResponse> getRecent(@PathVariable UUID accountId,
                                                                 @RequestParam(defaultValue = "0") int page,
                                                                 @RequestParam(defaultValue = "5") int size) {
         log.info("Getting transactions for account {} on page {} of size {}", accountId, page, size);
         RecentTransactionsResponse recentTransactions = transactionsService.getRecent(accountId, page, size);
         return ResponseEntity.ok(recentTransactions);
+    }
+
+    @GetMapping("/{transactionId}")
+    @PreAuthorize("hasRole('ADMIN') or @ownershipService.isTransactionOwner(#accountId, authentication)")
+    public ResponseEntity<TransactionResponse> getTransaction(@PathVariable UUID transactionId) {
+        log.info("Getting transaction with id {}", transactionId);
+        TransactionResponse transactionResponse = transactionsService.getTransaction(transactionId);
+        return ResponseEntity.status(HttpStatus.OK).body(transactionResponse);
+    }
+
+    // ADMIN-only
+
+    @PutMapping("/cancel/{transactionId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> cancelTransaction(@PathVariable UUID transactionId) {
+        log.info("Cancelling transaction with id {}", transactionId);
+        transactionsService.cancelTransaction(transactionId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

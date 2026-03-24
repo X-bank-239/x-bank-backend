@@ -1,5 +1,6 @@
 package com.example.xbankbackend.dtos.requests;
 
+import com.example.xbankbackend.enums.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.Email;
@@ -26,4 +27,6 @@ public class CreateUserRequest {
 
     @NotNull(message = "password cannot be null")
     private String password;
+
+    private UserRole role;
 }

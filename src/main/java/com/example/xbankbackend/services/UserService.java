@@ -2,6 +2,7 @@ package com.example.xbankbackend.services;
 
 import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
+import com.example.xbankbackend.enums.UserRole;
 import com.example.xbankbackend.exceptions.UserAlreadyExistsException;
 import com.example.xbankbackend.exceptions.UserGivesIncorrectEmail;
 import com.example.xbankbackend.exceptions.UserNotFoundException;
@@ -14,6 +15,7 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -68,9 +70,12 @@ public class UserService {
         user.setPassword(hashedPassword);
 
         user.setUserId(UUID.randomUUID());
+        user.setRole(UserRole.USER);
+        user.setActive(Boolean.TRUE);
         userRepository.create(user);
 
         List<BankAccount> accounts = bankAccountRepository.getBankAccounts(user.getUserId());
+        System.out.println(userRepository.getUser(user.getUserId()));
 
         return userProfileMapper.map(userRepository.getUser(user.getUserId()), accounts);
     }
@@ -111,10 +116,33 @@ public class UserService {
 
         return userProfileResponse;
     }
+
+    public void changePassword(UUID userId, String oldPassword, String newPassword) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " doesn't exist");
+        }
+        String hashedPassword = userRepository.getHashedPassword(userId);
+        if (!passwordEncoder.matches(oldPassword, hashedPassword)) {
+            throw new BadCredentialsException("Old password doesn't match actual password");
+        }
+        if (oldPassword.equals(newPassword)) {
+            throw new IllegalArgumentException("New password cannot math old one");
+        }
+        userRepository.updatePassword(userId, passwordEncoder.encode(newPassword));
+    }
+
+    public void blockUser(UUID userId) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " doesn't exist");
+        }
+        userRepository.block(userId);
+    }
+
     public String generateTokenByEmail(String email){
         User user = userRepository.getUserByEmail(email);
-        return jwtUtil.generateToken(user.getUserId());
+        return jwtUtil.generateToken(user.getUserId(), user.getRole().toString());
     }
+
     public boolean authenticated(String email, String input_password){
         if (!userRepository.existsByEmail(email)) {
             return false;
