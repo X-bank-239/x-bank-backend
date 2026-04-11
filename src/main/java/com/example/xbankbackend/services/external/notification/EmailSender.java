@@ -41,8 +41,8 @@ public class EmailSender {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(to);
-            helper.setSubject("Вход на Госуслуги");
-            helper.setText("Никому не сообщайте код. Его спрашивают ТОЛЬКО мошенники. Код: <b>" + code + "</b>. Действует 5 минут.", true);
+            helper.setSubject("Код подтверждения X-Bank");
+            helper.setText("Ваш код для входа: <b>" + code + "</b>. Действует 5 минут.", true);
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send email", e);
