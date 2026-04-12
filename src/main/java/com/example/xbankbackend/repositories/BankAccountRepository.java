@@ -1,6 +1,7 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.models.BankAccount;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -80,6 +81,13 @@ public class BankAccountRepository {
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
                 .fetchOne()
                 .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
+    }
+
+    public BankAccountType getAccountType(UUID accountId) {
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .fetchOne()
+                .getValue(BANK_ACCOUNTS.ACCOUNT_TYPE, BankAccountType.class);
     }
 
     public BigDecimal getBalance(UUID accountId) {
