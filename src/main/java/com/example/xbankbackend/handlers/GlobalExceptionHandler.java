@@ -9,6 +9,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 
 @Log4j2
 @ControllerAdvice
@@ -104,7 +106,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
     @ExceptionHandler(UserIsNotABankAccountOwner.class)
-    public ResponseEntity<ErrorResponse> handleBankAccountOwnership(UserAlreadyExistsException ex) {
+    public ResponseEntity<ErrorResponse> handleBankAccountOwnership(UserIsNotABankAccountOwner ex) {
         log.warn(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -114,6 +116,34 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalArgument(CurrencyParsingException ex) {
         log.warn(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "PARSING_ERROR", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(ArbitraryRepaymentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalRepaymentSum(ArbitraryRepaymentException ex) {
+        log.warn(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_INPUT", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(LoanNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLoanNotFound(LoanNotFoundException ex) {
+        log.warn(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, "LOAN_NOT_FOUND", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(LoanClosedException.class)
+    public ResponseEntity<ErrorResponse> handleLoanClosed(LoanClosedException ex) {
+        log.warn(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "LOAN_CLOSED", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(LoanRepaymentAmountMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleLoanRepaymentAmountMismatch(LoanRepaymentAmountMismatchException ex) {
+        log.warn(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REPAYMENT_AMOUNT", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
