@@ -12,6 +12,7 @@ import com.example.xbankbackend.exceptions.UserIsNotABankAccountOwner;
 import com.example.xbankbackend.mappers.TransactionMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
+import com.example.xbankbackend.repositories.TransactionCategoriesRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
@@ -28,12 +29,15 @@ import java.util.UUID;
 @Service
 public class TransactionsService {
 
+    // TODO: рефактор этого
     private CurrencyRateService currencyRateService;
     private FeeService feeService;
     private TransactionsRepository transactionsRepository;
     private BankAccountRepository bankAccountRepository;
     private UserRepository userRepository;
     private TransactionMapper transactionMapper;
+    private TransactionCategoriesService categoriesService;
+    private TransactionCategoriesRepository categoriesRepository;
 
     public void deposit(Transaction deposit, UUID authenticatedUserId) {
         validateDeposit(deposit, authenticatedUserId);
@@ -46,6 +50,7 @@ public class TransactionsService {
         deposit.setTransactionId(UUID.randomUUID());
         deposit.setTransactionDate(OffsetDateTime.now());
         deposit.setStatus(TransactionStatus.COMPLETED);
+        deposit.setCategory(categoriesService.findCategory(deposit.getComment()));
 
         transactionsRepository.addTransaction(deposit);
         bankAccountRepository.increaseBalance(receiverId, convertedAmount);
@@ -64,6 +69,7 @@ public class TransactionsService {
         transfer.setTransactionId(UUID.randomUUID());
         transfer.setTransactionDate(OffsetDateTime.now());
         transfer.setStatus(TransactionStatus.COMPLETED);
+        transfer.setCategory(categoriesService.findCategory(transfer.getComment()));
 
         transactionsRepository.addTransaction(transfer);
         bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
@@ -79,6 +85,7 @@ public class TransactionsService {
         payment.setTransactionId(UUID.randomUUID());
         payment.setTransactionDate(OffsetDateTime.now());
         payment.setStatus(TransactionStatus.COMPLETED);
+        payment.setCategory(categoriesService.findCategory(payment.getComment()));
 
         transactionsRepository.addTransaction(payment);
         bankAccountRepository.decreaseBalance(senderId, feeService.applyBaseFee(amount));
@@ -228,6 +235,16 @@ public class TransactionsService {
         }
 
         transactionsRepository.cancel(transactionId);
+    }
+
+    public List<Transaction> getTransactionsByCategory(UUID accountId, String categoryCode) {
+        if (!bankAccountRepository.exists(accountId)) {
+            throw new BankAccountNotFoundException("Bank account with UUID " + accountId + " doesn't exist");
+        }
+        if (!categoriesRepository.existsByCode(categoryCode)) {
+            throw new IllegalArgumentException("Category with code " + categoryCode + " doesn't exist");
+        }
+        return transactionsRepository.getTransactionsByCategory(accountId, categoryCode);
     }
 
     public RecentTransactionsResponse getRecent(UUID accountId, int page, int size) {
