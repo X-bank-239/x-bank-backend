@@ -1,18 +1,17 @@
 package com.example.xbankbackend.models;
 
 import com.example.xbankbackend.enums.CurrencyType;
-import com.example.xbankbackend.enums.TransactionStatus;
-import com.example.xbankbackend.enums.TransactionType;
+import com.example.xbankbackend.enums.LoanStatus;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -21,20 +20,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Transaction {
-
-    @NotNull(message = "transactionType cannot be null")
-    private TransactionType transactionType;
-    private UUID transactionId;
-    private UUID senderId;
-    private UUID receiverId;
-
-    @NotNull(message = "amount cannot be null")
-    private BigDecimal amount;
-
-    @NotNull(message = "currency cannot be blank")
+public class Loan {
+    private UUID loanId;
+    private UUID userId;
+    private UUID creditAccountId;
+    private UUID serviceAccountId;
     private CurrencyType currency;
-    private OffsetDateTime transactionDate;
-    private String comment;
-    private TransactionStatus status;
+    private BigDecimal principalAmount;
+    private BigDecimal annualInterestRate;
+    private Integer termMonths;
+    private BigDecimal monthlyPayment;
+    private BigDecimal outstandingPrincipal;
+    private LocalDate nextPaymentDate;
+    private LoanStatus status;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime closedAt;
 }

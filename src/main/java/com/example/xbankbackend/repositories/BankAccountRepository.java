@@ -1,6 +1,7 @@
 package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.enums.CurrencyType;
+import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.models.BankAccount;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
-import static com.example.xbankbackend.generated.Tables.USERS;
 
 @AllArgsConstructor
 @Repository
@@ -82,6 +82,13 @@ public class BankAccountRepository {
                 .getValue(BANK_ACCOUNTS.CURRENCY, CurrencyType.class);
     }
 
+    public BankAccountType getAccountType(UUID accountId) {
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .fetchOne()
+                .getValue(BANK_ACCOUNTS.ACCOUNT_TYPE, BankAccountType.class);
+    }
+
     public BigDecimal getBalance(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
@@ -90,11 +97,8 @@ public class BankAccountRepository {
     }
 
     public List<BankAccount> getBankAccounts(UUID userId) {
-        return dsl.select()
-                .from(BANK_ACCOUNTS)
-                .join(USERS).on(BANK_ACCOUNTS.USER_ID.eq(USERS.USER_ID))
-                .where(USERS.USER_ID.eq(userId))
-                .fetch()
-                .into(BankAccount.class);
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.USER_ID.eq(userId))
+                .fetchInto(BankAccount.class);
     }
 }
