@@ -1,5 +1,7 @@
 package com.example.xbankbackend.repositories;
 
+import com.example.xbankbackend.dtos.responses.LoanResponse;
+import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.Loan;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -8,9 +10,13 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.xbankbackend.generated.Tables.LOANS;
+import static com.example.xbankbackend.generated.Tables.*;
+import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
+import static com.example.xbankbackend.generated.Tables.USERS;
 
 @AllArgsConstructor
 @Repository
@@ -42,6 +48,23 @@ public class LoanRepository {
         return dsl.selectFrom(LOANS)
                 .where(LOANS.LOAN_ID.eq(loanId))
                 .fetchOneInto(Loan.class);
+    }
+    public List<Loan> getLoans(UUID userId) {
+        return dsl.select()
+                .from(LOANS)
+                .join(USERS).on(LOANS.USER_ID.eq(USERS.USER_ID))
+                .where(USERS.USER_ID.eq(userId))
+                .fetch()
+                .into(Loan.class);
+    }
+    public Optional<Loan> findActiveByCreditAccountIdAndUserId(UUID creditAccountId, UUID userId) {
+        return dsl.selectFrom(LOANS)
+                .where(LOANS.CREDIT_ACCOUNT_ID.eq(creditAccountId))
+                .and(LOANS.USER_ID.eq(userId))
+                .and(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .orderBy(LOANS.CREATED_AT.desc())
+                .limit(1)
+                .fetchOptionalInto(Loan.class);
     }
 
     public boolean exists(UUID loanId) {

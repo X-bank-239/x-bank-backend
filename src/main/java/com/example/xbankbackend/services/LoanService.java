@@ -2,24 +2,21 @@ package com.example.xbankbackend.services;
 
 import com.example.xbankbackend.dtos.requests.CreateLoanRequest;
 import com.example.xbankbackend.dtos.requests.LoanRepaymentRequest;
+import com.example.xbankbackend.dtos.responses.LoanPaymentAmountResponse;
 import com.example.xbankbackend.dtos.responses.LoanResponse;
 import com.example.xbankbackend.enums.BankAccountType;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.LoanStatus;
 import com.example.xbankbackend.enums.TransactionStatus;
 import com.example.xbankbackend.enums.TransactionType;
-import com.example.xbankbackend.exceptions.BankAccountNotFoundException;
-import com.example.xbankbackend.exceptions.DifferentCurrencyException;
-import com.example.xbankbackend.exceptions.InsufficientFundsException;
-import com.example.xbankbackend.exceptions.LoanClosedException;
-import com.example.xbankbackend.exceptions.LoanNotFoundException;
-import com.example.xbankbackend.exceptions.LoanRepaymentAmountMismatchException;
+import com.example.xbankbackend.exceptions.*;
 import com.example.xbankbackend.mappers.LoanMapper;
 import com.example.xbankbackend.models.Loan;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.LoanRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
+import com.example.xbankbackend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,20 +26,23 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
 public class LoanService {
-    public static final BigDecimal ANNUAL_RATE = new BigDecimal("0.15");
-    private static final BigDecimal MONTHLY_RATE = ANNUAL_RATE.divide(new BigDecimal("12"), 16, RoundingMode.HALF_UP);
+    private static final BigDecimal MONTHS_IN_YEAR = new BigDecimal("12");
 
     private final LoanRepository loanRepository;
     private final BankAccountRepository bankAccountRepository;
     private final TransactionsRepository transactionsRepository;
+    private final UserRepository userRepository;
     @Value("${application.serviceAccountId}")
     private UUID serviceAccountId;
+    @Value("${application.loanAnnualRate}")
+    private BigDecimal annualRate;
     private final LoanMapper mapper;
 
     public LoanResponse createLoan(CreateLoanRequest request, UUID authenticatedUserId) {
@@ -71,7 +71,7 @@ public class LoanService {
                 .serviceAccountId(serviceAccountId)
                 .currency(loanCurrency)
                 .principalAmount(principalAmount)
-                .annualInterestRate(ANNUAL_RATE)
+                .annualInterestRate(annualRate)
                 .termMonths(request.getTermMonths())
                 .monthlyPayment(monthlyPayment)
                 .outstandingPrincipal(principalAmount)
@@ -87,10 +87,11 @@ public class LoanService {
         return mapper.loanToResponse(loan);
     }
 
-    public LoanResponse repayMonthly(UUID loanId, LoanRepaymentRequest request, UUID authenticatedUserId) {
-        Loan loan = getActiveOwnedLoan(loanId, authenticatedUserId);
+    public LoanResponse repayMonthly(UUID creditAccountId, LoanRepaymentRequest request, UUID authenticatedUserId) {
+        Loan loan = getActiveLoanOwnedForCreditAccount(creditAccountId, authenticatedUserId);
+        UUID loanId = loan.getLoanId();
 
-        validatePayerAccount(request.getPayerAccountId(), authenticatedUserId, loan);
+        validateLoanCreditAccountForRepayment(loan, authenticatedUserId);
 
         BigDecimal expectedPayment = scaleMoney(loan.getMonthlyPayment());
         BigDecimal providedAmount = scaleMoney(request.getAmount());
@@ -98,10 +99,10 @@ public class LoanService {
             throw new LoanRepaymentAmountMismatchException("Arbitrary repayment amounts are not allowed. Monthly repayment must equal annuity amount");
         }
 
-        transferRepaymentToServiceAccount(request.getPayerAccountId(), loan, providedAmount);
+        transferRepaymentFromCreditAccount(creditAccountId, loan, providedAmount);
 
         BigDecimal currentOutstanding = scaleMoney(loan.getOutstandingPrincipal());
-        BigDecimal monthlyInterest = scaleMoney(currentOutstanding.multiply(MONTHLY_RATE));
+        BigDecimal monthlyInterest = scaleMoney(currentOutstanding.multiply(getMonthlyRate()));
         BigDecimal principalReduction = scaleMoney(providedAmount.subtract(monthlyInterest));
         if (principalReduction.compareTo(BigDecimal.ZERO) < 0) {
             principalReduction = BigDecimal.ZERO;
@@ -124,18 +125,19 @@ public class LoanService {
         return mapper.loanToResponse(loan);
     }
 
-    public LoanResponse repayEarly(UUID loanId, LoanRepaymentRequest request, UUID authenticatedUserId) {
-        Loan loan = getActiveOwnedLoan(loanId, authenticatedUserId);
+    public LoanResponse repayEarly(UUID creditAccountId, LoanRepaymentRequest request, UUID authenticatedUserId) {
+        Loan loan = getActiveLoanOwnedForCreditAccount(creditAccountId, authenticatedUserId);
+        UUID loanId = loan.getLoanId();
+        BigDecimal months = new BigDecimal(loan.getTermMonths());
+        validateLoanCreditAccountForRepayment(loan, authenticatedUserId);
 
-        validatePayerAccount(request.getPayerAccountId(), authenticatedUserId, loan);
-
-        BigDecimal requiredAmount = scaleMoney(loan.getOutstandingPrincipal());
+        BigDecimal requiredAmount = scaleMoney(loan.getOutstandingPrincipal().multiply(months));
         BigDecimal providedAmount = scaleMoney(request.getAmount());
         if (providedAmount.compareTo(requiredAmount) != 0) {
             throw new LoanRepaymentAmountMismatchException("Arbitrary repayment amounts are not allowed. Early repayment must close the remaining principal in full");
         }
 
-        transferRepaymentToServiceAccount(request.getPayerAccountId(), loan, providedAmount);
+        transferRepaymentFromCreditAccount(creditAccountId, loan, providedAmount);
         loanRepository.close(loanId, OffsetDateTime.now());
 
         loan.setOutstandingPrincipal(BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP));
@@ -143,9 +145,28 @@ public class LoanService {
         return mapper.loanToResponse(loan);
     }
 
-    public LoanResponse get(UUID loanId, UUID authenticatedUserId) {
-        Loan loan = getOwnedLoan(loanId, authenticatedUserId);
+    public LoanResponse getByCreditAccount(UUID loanId, UUID authenticatedUserId) {
+        Loan loan = getActiveLoanOwnedForCreditAccount(loanId, authenticatedUserId);
         return mapper.loanToResponse(loan);
+    }
+ 
+    public LoanPaymentAmountResponse fullPaymentCost(UUID creditAccountId, UUID authenticatedUserId) {
+        Loan loan = getActiveLoanOwnedForCreditAccount(creditAccountId, authenticatedUserId);
+        BigDecimal providedAmount = scaleMoney(loan.getOutstandingPrincipal());
+        BigDecimal termMonths = new BigDecimal(loan.getTermMonths());
+        LoanPaymentAmountResponse response = LoanPaymentAmountResponse.builder()
+                .amount(providedAmount.multiply(termMonths))
+                .build();
+        return response;
+
+    }
+    public LoanPaymentAmountResponse monthlyPaymentCost(UUID creditAccountId, UUID authenticatedUserId){
+        Loan loan = getActiveLoanOwnedForCreditAccount(creditAccountId, authenticatedUserId);
+        BigDecimal providedAmount = scaleMoney(loan.getMonthlyPayment());
+        LoanPaymentAmountResponse response = LoanPaymentAmountResponse.builder()
+                .amount(providedAmount)
+        .build();
+        return response;
     }
 
     BigDecimal calculateAnnuityPayment(BigDecimal principalAmount, int termMonths) {
@@ -156,13 +177,20 @@ public class LoanService {
             throw new IllegalArgumentException("Term months must be positive");
         }
 
-        double monthlyRate = MONTHLY_RATE.doubleValue();
+        double monthlyRate = getMonthlyRate().doubleValue();
         double factor = Math.pow(1 + monthlyRate, termMonths);
         BigDecimal numerator = principalAmount.multiply(BigDecimal.valueOf(monthlyRate)).multiply(BigDecimal.valueOf(factor));
         BigDecimal denominator = BigDecimal.valueOf(factor - 1);
         return scaleMoney(numerator.divide(denominator, 8, RoundingMode.HALF_UP));
     }
 
+    public List<LoanResponse> getLoansByUser(UUID userId) {
+        if (!userRepository.exists(userId)) {
+            throw new UserNotFoundException("User with UUID " + userId + " does not exist");
+        }
+        List<Loan> loans = loanRepository.getLoans(userId);
+        return mapper.loansToResponses(loans);
+    }
     private Loan getOwnedLoan(UUID loanId, UUID authenticatedUserId) {
         if (!loanRepository.exists(loanId)) {
             throw new LoanNotFoundException("Loan with UUID " + loanId + " does not exist");
@@ -182,6 +210,13 @@ public class LoanService {
         return loan;
     }
 
+    private Loan getActiveLoanOwnedForCreditAccount(UUID creditAccountId, UUID authenticatedUserId) {
+        validateAccountExists(creditAccountId);
+        return loanRepository.findActiveByCreditAccountIdAndUserId(creditAccountId, authenticatedUserId)
+                .orElseThrow(() -> new LoanNotFoundException(
+                        "No active loan for credit account " + creditAccountId));
+    }
+
     private void saveCompletedTransaction(Transaction tx) {
         tx.setTransactionId(UUID.randomUUID());
         tx.setTransactionDate(OffsetDateTime.now());
@@ -189,23 +224,23 @@ public class LoanService {
         transactionsRepository.addTransaction(tx);
     }
 
-    private void repayFromDebitToService(UUID payerId, UUID serviceId, BigDecimal amount, CurrencyType currency) {
-        if (bankAccountRepository.getBalance(payerId).compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Payer balance must be greater than or equal to repayment amount");
+    private void transferFromCreditAccountToService(UUID creditAccountId, UUID serviceId, BigDecimal amount, CurrencyType currency) {
+        if (bankAccountRepository.getBalance(creditAccountId).compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Credit account balance must be greater than or equal to repayment amount");
         }
         if (!bankAccountRepository.isActive(serviceId)) {
             throw new AccessDeniedException("Service account is deactivated");
         }
         Transaction tx = Transaction.builder()
                 .transactionType(TransactionType.TRANSFER)
-                .senderId(payerId)
+                .senderId(creditAccountId)
                 .receiverId(serviceId)
                 .amount(amount)
                 .currency(currency)
                 .comment("Погашение кредита")
                 .build();
         saveCompletedTransaction(tx);
-        bankAccountRepository.decreaseBalance(payerId, amount);
+        bankAccountRepository.decreaseBalance(creditAccountId, amount);
         bankAccountRepository.increaseBalance(serviceId, amount);
     }
 
@@ -215,28 +250,36 @@ public class LoanService {
         }
     }
 
-    private void validatePayerAccount(UUID payerAccountId, UUID authenticatedUserId, Loan loan) {
-        validateAccountExists(payerAccountId);
-        if (!bankAccountRepository.getUserId(payerAccountId).equals(authenticatedUserId)) {
-            throw new AccessDeniedException("Authenticated user is not the payer account owner");
+    private void validateLoanCreditAccountForRepayment(Loan loan, UUID authenticatedUserId) {
+        UUID creditAccountId = loan.getCreditAccountId();
+        validateAccountExists(creditAccountId);
+        if (!bankAccountRepository.getUserId(creditAccountId).equals(authenticatedUserId)) {
+            throw new AccessDeniedException("Authenticated user is not the credit account owner");
         }
-        if (bankAccountRepository.getAccountType(payerAccountId) != BankAccountType.DEBIT) {
-            throw new IllegalArgumentException("Repayment payer account must have DEBIT type");
+        if (bankAccountRepository.getAccountType(creditAccountId) != BankAccountType.CREDIT) {
+            throw new IllegalArgumentException("Loan-linked account must have CREDIT type");
         }
-        if (!bankAccountRepository.getCurrency(payerAccountId).equals(loan.getCurrency())) {
-            throw new DifferentCurrencyException("Repayment payer account currency must match loan currency");
+        if (!bankAccountRepository.getCurrency(creditAccountId).equals(loan.getCurrency())) {
+            throw new DifferentCurrencyException("Credit account currency must match loan currency");
         }
-        if (!bankAccountRepository.isActive(payerAccountId)) {
-            throw new AccessDeniedException("Payer account is deactivated");
+        if (!bankAccountRepository.isActive(creditAccountId)) {
+            throw new AccessDeniedException("Credit account is deactivated");
         }
     }
 
-    private void transferRepaymentToServiceAccount(UUID payerAccountId, Loan loan, BigDecimal amount) {
-        repayFromDebitToService(payerAccountId, loan.getServiceAccountId(), amount, loan.getCurrency());
+    private void transferRepaymentFromCreditAccount(UUID creditAccountId, Loan loan, BigDecimal amount) {
+        if (!loan.getCreditAccountId().equals(creditAccountId)) {
+            throw new AccessDeniedException("Repayment must be transferred from the loan credit account");
+        }
+        transferFromCreditAccountToService(creditAccountId, loan.getServiceAccountId(), amount, loan.getCurrency());
     }
 
     private BigDecimal scaleMoney(BigDecimal amount) {
         return amount.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getMonthlyRate() {
+        return annualRate.divide(MONTHS_IN_YEAR, 16, RoundingMode.HALF_UP);
     }
 
 }
