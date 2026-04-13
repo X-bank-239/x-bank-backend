@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
-import static com.example.xbankbackend.generated.Tables.USERS;
 
 @AllArgsConstructor
 @Repository
@@ -98,11 +97,8 @@ public class BankAccountRepository {
     }
 
     public List<BankAccount> getBankAccounts(UUID userId) {
-        return dsl.select()
-                .from(BANK_ACCOUNTS)
-                .join(USERS).on(BANK_ACCOUNTS.USER_ID.eq(USERS.USER_ID))
-                .where(USERS.USER_ID.eq(userId))
-                .fetch()
-                .into(BankAccount.class);
+        return dsl.selectFrom(BANK_ACCOUNTS)
+                .where(BANK_ACCOUNTS.USER_ID.eq(userId))
+                .fetchInto(BankAccount.class);
     }
 }
