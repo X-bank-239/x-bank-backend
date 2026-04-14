@@ -37,6 +37,17 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateTempToken(UUID stateId, String email) {
+        return Jwts.builder()
+                .setSubject("2FA_TEMP")
+                .claim("stateId", stateId.toString())
+                .claim("email", email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 300_000))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public UUID extractUserId(String token) {
         String id = extractAllClaims(token).get("userId", String.class);
         return id != null ? UUID.fromString(id) : null;
@@ -44,6 +55,14 @@ public class JwtUtil {
 
     public String extractUserRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    public UUID extractStateId(String token) {
+        return UUID.fromString(extractAllClaims(token).get("stateId", String.class));
+    }
+
+    public String extractEmail(String token) {
+        return extractAllClaims(token).get("email", String.class);
     }
 
     private Claims extractAllClaims(String token) {

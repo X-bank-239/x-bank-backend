@@ -3,13 +3,18 @@ package com.example.xbankbackend.controllers;
 import com.example.xbankbackend.dtos.requests.AuthUserRequest;
 import com.example.xbankbackend.dtos.requests.CreateUserRequest;
 import com.example.xbankbackend.dtos.requests.UpdatePasswordRequest;
+import com.example.xbankbackend.dtos.requests.Verify2FARequest;
 import com.example.xbankbackend.dtos.responses.BankAccountResponse;
+import com.example.xbankbackend.dtos.TempAuthState;
+import com.example.xbankbackend.dtos.responses.LoginInitResponse;
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
 import com.example.xbankbackend.jwt.JwtUtil;
 import com.example.xbankbackend.mappers.UserMapper;
 import com.example.xbankbackend.models.AuthResponse;
 import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.services.UserService;
+import com.example.xbankbackend.services.VerificationService;
+import com.example.xbankbackend.services.external.notification.EmailSender;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -31,6 +36,8 @@ public class UserController {
     private UserService userService;
     private UserMapper userMapper;
     private JwtUtil jwtUtil;
+    private VerificationService verificationService;
+    private EmailSender emailSender;
 
     @PostMapping("/create")
     public ResponseEntity<UserProfileResponse> create(@RequestBody CreateUserRequest userRequest) {
@@ -48,17 +55,40 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthUserRequest user) {
-        log.info("Logging user: {}", user.getEmail());
-        if (userService.authenticated(user.getEmail(), user.getPassword())) {
-            String token = userService.generateTokenByEmail(user.getEmail());
-            AuthResponse response =  new AuthResponse();
-            response.setToken(token);
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(response);
+    public ResponseEntity<LoginInitResponse> login(@RequestBody AuthUserRequest request) {
+        log.info("Login attempt for user: {}", request.getEmail());
+        if (!userService.authenticated(request.getEmail(), request.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        UserProfileResponse user = userService.getProfileByEmail(request.getEmail());
+        TempAuthState state = emailSender.sendVerificationCode(user.getUserId(), user.getEmail());
+        String tempToken = jwtUtil.generateTempToken(state.getId(), user.getEmail());
+
+        LoginInitResponse response = new LoginInitResponse();
+        response.setRequires2fa(true);
+        response.setTempToken(tempToken);
+        response.setEmail(user.getEmail());
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/login/2fa")
+    public ResponseEntity<AuthResponse> verify2FA(@RequestBody Verify2FARequest request) {
+        UUID stateId = jwtUtil.extractStateId(request.getTempToken());
+        String email = jwtUtil.extractEmail(request.getTempToken());
+        log.info("2fa for user with stateId {} and email {}", stateId, email);
+
+        if (!verificationService.verifyCode(stateId, request.getCode())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String token = userService.generateTokenByEmail(email);
+
+        AuthResponse response = new AuthResponse();
+        response.setToken(token);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/me")
