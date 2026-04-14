@@ -138,6 +138,7 @@ public class GlobalExceptionHandler {
         log.warn(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, "KEYWORD_NOT_FOUND", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
 
     @ExceptionHandler(ArbitraryRepaymentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalRepaymentSum(ArbitraryRepaymentException ex) {
