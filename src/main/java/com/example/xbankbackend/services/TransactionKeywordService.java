@@ -7,7 +7,7 @@ import com.example.xbankbackend.exceptions.KeywordNotFoundException;
 import com.example.xbankbackend.mappers.TransactionKeywordMapper;
 import com.example.xbankbackend.models.TransactionKeyword;
 import com.example.xbankbackend.repositories.TransactionCategoriesRepository;
-import com.example.xbankbackend.repositories.TransactionKeywordRepository;
+import com.example.xbankbackend.repositories.TransactionKeywordsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class TransactionKeywordService {
 
-    private TransactionKeywordRepository keywordRepository;
+    private TransactionKeywordsRepository keywordRepository;
     private TransactionCategoriesRepository categoriesRepository;
     private TransactionKeywordMapper keywordMapper;
 

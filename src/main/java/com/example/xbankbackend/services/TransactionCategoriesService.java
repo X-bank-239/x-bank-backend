@@ -7,7 +7,7 @@ import com.example.xbankbackend.mappers.TransactionCategoryMapper;
 import com.example.xbankbackend.models.TransactionCategory;
 import com.example.xbankbackend.models.TransactionKeyword;
 import com.example.xbankbackend.repositories.TransactionCategoriesRepository;
-import com.example.xbankbackend.repositories.TransactionKeywordRepository;
+import com.example.xbankbackend.repositories.TransactionKeywordsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 @Service
 public class TransactionCategoriesService {
 
-    private TransactionKeywordRepository keywordRepository;
+    private TransactionKeywordsRepository keywordRepository;
     private TransactionCategoriesRepository categoriesRepository;
     private TransactionCategoryMapper categoryMapper;
 

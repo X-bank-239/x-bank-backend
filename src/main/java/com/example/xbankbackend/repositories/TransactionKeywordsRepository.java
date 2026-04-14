@@ -11,7 +11,7 @@ import static com.example.xbankbackend.generated.Tables.TRANSACTION_KEYWORDS;
 
 @AllArgsConstructor
 @Repository
-public class TransactionKeywordRepository {
+public class TransactionKeywordsRepository {
 
     private final DSLContext dsl;
 
