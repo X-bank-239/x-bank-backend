@@ -48,6 +48,9 @@ public class TransactionsServiceTest {
     @Mock
     private OwnershipService ownershipService;
 
+    @Mock
+    private TransactionCategoriesService categoriesService;
+
     @InjectMocks
     private TransactionsService transactionsService;
 
@@ -149,6 +152,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
         when(bankAccountRepository.getUserId(any())).thenReturn(userId);
+        when(categoriesService.findCategory(any())).thenReturn("OTHER");
 
         transactionsService.deposit(transaction, userId);
 
@@ -328,6 +332,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.isActive(receiverId)).thenReturn(true);
         when(currencyRateService.convert(any(), any(), any())).thenReturn(BigDecimal.valueOf(5000.0f));
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
+        when(categoriesService.findCategory(any())).thenReturn("OTHER");
 
         transactionsService.transfer(transaction, userId);
 
@@ -454,6 +459,7 @@ public class TransactionsServiceTest {
         when(bankAccountRepository.getBalance(senderId)).thenReturn(BigDecimal.valueOf(6000.0f));
         when(bankAccountRepository.isActive(senderId)).thenReturn(true);
         when(feeService.applyBaseFee(any())).thenReturn(BigDecimal.valueOf(5075.0f));
+        when(categoriesService.findCategory(any())).thenReturn("OTHER");
 
         transactionsService.pay(transaction, userId);
 
