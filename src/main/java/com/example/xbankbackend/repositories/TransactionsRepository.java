@@ -17,9 +17,10 @@ public class TransactionsRepository {
 
     private final DSLContext dsl;
 
+    // TODO: переделать с помощью .set()
     public void addTransaction(Transaction transaction) {
         dsl.insertInto(TRANSACTIONS)
-                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getTransactionDate(), transaction.getTransactionType(), transaction.getComment(), transaction.getStatus())
+                .values(transaction.getTransactionId(), transaction.getSenderId(), transaction.getReceiverId(), transaction.getAmount(), transaction.getCurrency(), transaction.getTransactionDate(), transaction.getTransactionType(), transaction.getComment(), transaction.getStatus(), transaction.getCategory())
                 .execute();
     }
 
@@ -53,6 +54,14 @@ public class TransactionsRepository {
                 .orderBy(TRANSACTIONS.TRANSACTION_DATE.desc())
                 .limit(size)
                 .offset(offset)
+                .fetchInto(Transaction.class);
+    }
+
+    public List<Transaction> getTransactionsByCategory(UUID accountId, String categoryCode) {
+        return dsl.selectFrom(TRANSACTIONS)
+                .where(TRANSACTIONS.SENDER_ID.eq(accountId).or(TRANSACTIONS.RECEIVER_ID.eq(accountId)))
+                .and(TRANSACTIONS.CATEGORY.eq(categoryCode))
+                .orderBy(TRANSACTIONS.TRANSACTION_DATE.desc())
                 .fetchInto(Transaction.class);
     }
 
