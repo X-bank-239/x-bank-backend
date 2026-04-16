@@ -1,7 +1,7 @@
 package com.example.xbankbackend.jwt;
 
 import com.example.xbankbackend.dtos.responses.UserProfileResponse;
-import com.example.xbankbackend.services.UserService;
+import com.example.xbankbackend.services.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
