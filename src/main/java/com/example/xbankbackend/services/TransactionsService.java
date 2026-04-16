@@ -15,6 +15,7 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionCategoriesRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;

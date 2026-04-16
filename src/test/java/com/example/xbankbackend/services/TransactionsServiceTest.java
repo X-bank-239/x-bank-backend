@@ -11,6 +11,7 @@ import com.example.xbankbackend.models.User;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

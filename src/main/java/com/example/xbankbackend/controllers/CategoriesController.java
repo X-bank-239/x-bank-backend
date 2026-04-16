@@ -4,7 +4,7 @@ import com.example.xbankbackend.dtos.requests.CreateCategoryRequest;
 import com.example.xbankbackend.dtos.requests.UpdateCategoryRequest;
 import com.example.xbankbackend.mappers.TransactionCategoryMapper;
 import com.example.xbankbackend.models.TransactionCategory;
-import com.example.xbankbackend.services.TransactionCategoriesService;
+import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
