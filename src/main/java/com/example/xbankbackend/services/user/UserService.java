@@ -104,4 +104,9 @@ public class UserService {
 
         return userPasswordService.matches(inputPassword, storedHash);
     }
+
+    public String getNameByAccountId(UUID accountId) {
+        UUID senderIdUser = bankAccountRepository.getUserId(accountId);
+        return userRepository.getUser(senderIdUser).getFirstName();
+    }
 }
