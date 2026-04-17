@@ -5,21 +5,22 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class BalanceOperationService {
 
-    private BankAccountRepository bankAccountRepository;
-    private CurrencyRateService currencyRateService;
-    private FeeService feeService;
+    private final BankAccountRepository bankAccountRepository;
+    private final CurrencyRateService currencyRateService;
+    private final FeeService feeService;
 
-    @Value("application.serviceAccountId")
+    @Value("${application.serviceAccountId}")
     private UUID serviceAccountId;
 
     public void increaseBalance(UUID accountId, BigDecimal amount, CurrencyType txCurrency) {
