@@ -12,7 +12,7 @@ import com.example.xbankbackend.jwt.JwtUtil;
 import com.example.xbankbackend.mappers.UserMapper;
 import com.example.xbankbackend.models.AuthResponse;
 import com.example.xbankbackend.models.User;
-import com.example.xbankbackend.services.UserService;
+import com.example.xbankbackend.services.user.UserService;
 import com.example.xbankbackend.services.VerificationService;
 import com.example.xbankbackend.services.external.notification.EmailSender;
 import lombok.AllArgsConstructor;

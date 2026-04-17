@@ -21,4 +21,5 @@ public class TransactionResponse {
     private OffsetDateTime transactionDate;
     private String comment;
     private TransactionStatus status;
+    private String category;
 }

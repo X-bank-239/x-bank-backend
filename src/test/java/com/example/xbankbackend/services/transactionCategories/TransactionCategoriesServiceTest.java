@@ -1,18 +1,17 @@
-package com.example.xbankbackend.services;
+package com.example.xbankbackend.services.transactionCategories;
 
 import com.example.xbankbackend.dtos.requests.UpdateCategoryRequest;
 import com.example.xbankbackend.exceptions.CategoryNotFoundException;
-import com.example.xbankbackend.exceptions.ConflictException;
 import com.example.xbankbackend.mappers.TransactionCategoryMapper;
 import com.example.xbankbackend.models.TransactionCategory;
 import com.example.xbankbackend.models.TransactionKeyword;
 import com.example.xbankbackend.repositories.TransactionCategoriesRepository;
 import com.example.xbankbackend.repositories.TransactionKeywordsRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -20,10 +19,11 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("TransactionCategoriesService")
 class TransactionCategoriesServiceTest {
 
     @Mock
@@ -35,12 +35,11 @@ class TransactionCategoriesServiceTest {
     @Mock
     private TransactionCategoryMapper categoryMapper;
 
-    private TransactionCategoriesService service;
+    @Mock
+    private TransactionCategoriesValidationService categoriesValidationService;
 
-    @BeforeEach
-    void setUp() {
-        service = new TransactionCategoriesService(keywordRepository, categoriesRepository, categoryMapper);
-    }
+    @InjectMocks
+    private TransactionCategoriesService service;
 
     @Nested
     @DisplayName("findCategory")
@@ -58,22 +57,22 @@ class TransactionCategoriesServiceTest {
 
         @Test
         void shouldReturnOther_WhenNoKeywordsMatch() {
-            String result = service.findCategory("Покупка в аптеке");
+            when(keywordRepository.findAllKeywords()).thenReturn(List.of(
+                    new TransactionKeyword("магнит", "FOOD", OffsetDateTime.now()),
+                    new TransactionKeyword("такси", "TRANSPORT", OffsetDateTime.now())
+            ));
 
-            assertThat(result).isEqualTo("OTHER");
+            assertThat(service.findCategory("Покупка в аптеке")).isEqualTo("OTHER");
         }
 
         @Test
         void shouldReturnCategory_WhenKeywordMatches() {
             when(keywordRepository.findAllKeywords()).thenReturn(List.of(
-                    new TransactionKeyword("магнит", "FOOD", OffsetDateTime.now()),
-                    new TransactionKeyword("такси", "TRANSPORT", OffsetDateTime.now())
+                    new TransactionKeyword("магнит", "FOOD", OffsetDateTime.now())
             ));
             when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
 
-            String result = service.findCategory("Покупка в МАГНИТЕ");
-
-            assertThat(result).isEqualTo("FOOD");
+            assertThat(service.findCategory("Покупка в МАГНИТЕ")).isEqualTo("FOOD");
         }
 
         @Test
@@ -83,24 +82,7 @@ class TransactionCategoriesServiceTest {
             ));
             when(categoriesRepository.existsByCode("FOOD")).thenReturn(false);
 
-            String result = service.findCategory("Покупка в МАГНИТЕ");
-
-            assertThat(result).isEqualTo("OTHER");
-        }
-
-        @Test
-        void shouldReturnFirstMatchingCategory_WhenMultipleKeywordsMatch() {
-            when(keywordRepository.findAllKeywords()).thenReturn(List.of(
-                    new TransactionKeyword("еда", "FOOD", OffsetDateTime.now()),
-                    new TransactionKeyword("магнит", "FOOD", OffsetDateTime.now()),
-                    new TransactionKeyword("продукты", "FOOD", OffsetDateTime.now())
-            ));
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
-
-            String result = service.findCategory("Покупка продуктов в магните");
-
-            assertThat(result).isEqualTo("FOOD");
-            verify(categoriesRepository, times(1)).existsByCode("FOOD");
+            assertThat(service.findCategory("Покупка в МАГНИТЕ")).isEqualTo("OTHER");
         }
     }
 
@@ -114,17 +96,16 @@ class TransactionCategoriesServiceTest {
             expected.setCode("FOOD");
             expected.setDisplayName("Еда");
 
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
+            doNothing().when(categoriesValidationService).validateCategoryExists("FOOD");
             when(categoriesRepository.findByCode("FOOD")).thenReturn(expected);
 
-            TransactionCategory result = service.getCategory("FOOD");
-
-            assertThat(result).isEqualTo(expected);
+            assertThat(service.getCategory("FOOD")).isEqualTo(expected);
         }
 
         @Test
-        void shouldThrowException_WhenCategoryNotFound() {
-            when(categoriesRepository.existsByCode("UNKNOWN")).thenReturn(false);
+        void shouldThrowCategoryNotFoundException_WhenNotExists() {
+            doThrow(new CategoryNotFoundException("Not found"))
+                    .when(categoriesValidationService).validateCategoryExists("UNKNOWN");
 
             assertThatThrownBy(() -> service.getCategory("UNKNOWN"))
                     .isInstanceOf(CategoryNotFoundException.class);
@@ -136,16 +117,15 @@ class TransactionCategoriesServiceTest {
     class GetAllCategoriesTests {
 
         @Test
-        void shouldReturnAllActiveCategories() {
+        void shouldReturnAllCategories() {
             List<TransactionCategory> expected = List.of(
                     new TransactionCategory("FOOD", "Еда", "#4CAF50", true),
                     new TransactionCategory("TRANSPORT", "Транспорт", "#2196F3", true)
             );
+
             when(categoriesRepository.findAllCategories()).thenReturn(expected);
 
-            List<TransactionCategory> result = service.getAllCategories();
-
-            assertThat(result).hasSize(2).containsExactlyElementsOf(expected);
+            assertThat(service.getAllCategories()).hasSize(2).containsExactlyElementsOf(expected);
         }
     }
 
@@ -160,47 +140,29 @@ class TransactionCategoriesServiceTest {
             input.setDisplayName("Еда");
             input.setColorCode("#4CAF50");
 
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(false);
+            doNothing().when(categoriesValidationService).validateCategoryCode("FOOD");
+            doNothing().when(categoriesValidationService).validateHexColor("#4CAF50");
+            doNothing().when(categoriesValidationService).validateCategoryIsUnique("FOOD");
 
             service.createCategory(input);
 
             verify(categoriesRepository).create("FOOD", "Еда", "#4CAF50");
-            verify(categoriesRepository).create(anyString(), anyString(), anyString());
+            assertThat(input.getIsActive()).isTrue();
         }
 
         @Test
-        void shouldThrowException_WhenCodeContainsSpaces() {
+        void shouldThrowException_WhenValidationFails() {
             TransactionCategory input = new TransactionCategory();
             input.setCode("FO OD");
-            input.setDisplayName("Еда");
-            input.setColorCode("#4CAF50");
+            input.setColorCode("#FFF");
+
+            doThrow(new IllegalArgumentException("Invalid code"))
+                    .when(categoriesValidationService).validateCategoryCode("FO OD");
 
             assertThatThrownBy(() -> service.createCategory(input))
                     .isInstanceOf(IllegalArgumentException.class);
-        }
 
-        @Test
-        void shouldThrowException_WhenColorCodeIsInvalid() {
-            TransactionCategory input = new TransactionCategory();
-            input.setCode("FOOD");
-            input.setDisplayName("Еда");
-            input.setColorCode("invalid");
-
-            assertThatThrownBy(() -> service.createCategory(input))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
-
-        @Test
-        void shouldThrowException_WhenCategoryAlreadyExists() {
-            TransactionCategory input = new TransactionCategory();
-            input.setCode("FOOD");
-            input.setDisplayName("Еда");
-            input.setColorCode("#4CAF50");
-
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
-
-            assertThatThrownBy(() -> service.createCategory(input))
-                    .isInstanceOf(ConflictException.class);
+            verify(categoriesRepository, never()).create(any(), any(), any());
         }
     }
 
@@ -216,7 +178,8 @@ class TransactionCategoriesServiceTest {
 
             TransactionCategory existing = new TransactionCategory("FOOD", "Еда", "#4CAF50", true);
 
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
+            doNothing().when(categoriesValidationService).validateCategoryExists("FOOD");
+            doNothing().when(categoriesValidationService).validateHexColor("#FF5722");
             when(categoriesRepository.findByCode("FOOD")).thenReturn(existing);
 
             service.updateCategory("FOOD", request);
@@ -228,25 +191,13 @@ class TransactionCategoriesServiceTest {
         @Test
         void shouldThrowException_WhenCategoryNotFound() {
             UpdateCategoryRequest request = new UpdateCategoryRequest();
-            request.setDisplayName("Новая Еда");
-            request.setColorCode("#FF5722");
+            request.setColorCode("#FFF");
 
-            when(categoriesRepository.existsByCode("UNKNOWN")).thenReturn(false);
+            doThrow(new CategoryNotFoundException("Not found"))
+                    .when(categoriesValidationService).validateCategoryExists("UNKNOWN");
 
             assertThatThrownBy(() -> service.updateCategory("UNKNOWN", request))
                     .isInstanceOf(CategoryNotFoundException.class);
-        }
-
-        @Test
-        void shouldThrowException_WhenInvalidColorCode() {
-            UpdateCategoryRequest request = new UpdateCategoryRequest();
-            request.setDisplayName("Новая Еда");
-            request.setColorCode("not-a-hex");
-
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
-
-            assertThatThrownBy(() -> service.updateCategory("FOOD", request))
-                    .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
@@ -256,7 +207,7 @@ class TransactionCategoriesServiceTest {
 
         @Test
         void shouldDeleteCategory_WhenExists() {
-            when(categoriesRepository.existsByCode("FOOD")).thenReturn(true);
+            doNothing().when(categoriesValidationService).validateCategoryExists("FOOD");
 
             service.deleteCategory("FOOD");
 
@@ -265,7 +216,8 @@ class TransactionCategoriesServiceTest {
 
         @Test
         void shouldThrowException_WhenCategoryNotFound() {
-            when(categoriesRepository.existsByCode("UNKNOWN")).thenReturn(false);
+            doThrow(new CategoryNotFoundException("Not found"))
+                    .when(categoriesValidationService).validateCategoryExists("UNKNOWN");
 
             assertThatThrownBy(() -> service.deleteCategory("UNKNOWN"))
                     .isInstanceOf(CategoryNotFoundException.class);

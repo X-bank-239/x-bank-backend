@@ -5,7 +5,7 @@ import com.example.xbankbackend.dtos.responses.BankAccountResponse;
 import com.example.xbankbackend.jwt.SecurityUtil;
 import com.example.xbankbackend.mappers.BankAccountMapper;
 import com.example.xbankbackend.models.BankAccount;
-import com.example.xbankbackend.services.BankAccountService;
+import com.example.xbankbackend.services.bankAccount.BankAccountService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;

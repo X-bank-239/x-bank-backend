@@ -4,7 +4,7 @@ import com.example.xbankbackend.dtos.requests.CreateKeywordRequest;
 import com.example.xbankbackend.dtos.requests.UpdateKeywordRequest;
 import com.example.xbankbackend.mappers.TransactionKeywordMapper;
 import com.example.xbankbackend.models.TransactionKeyword;
-import com.example.xbankbackend.services.TransactionKeywordService;
+import com.example.xbankbackend.services.transactionKeywords.TransactionKeywordService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
