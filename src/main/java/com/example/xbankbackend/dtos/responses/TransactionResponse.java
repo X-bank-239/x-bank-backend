@@ -22,4 +22,5 @@ public class TransactionResponse {
     private String comment;
     private TransactionStatus status;
     private String category;
+    private BigDecimal commission;
 }

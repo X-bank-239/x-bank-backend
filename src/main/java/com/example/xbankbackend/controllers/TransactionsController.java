@@ -28,23 +28,23 @@ public class TransactionsController {
     private TransactionsService transactionsService;
     private TransactionMapper transactionMapper;
     @PostMapping("/deposit")
-    public ResponseEntity<Transaction> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
+    public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing deposit: {}", transactionRequest);
         UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction deposit = transactionMapper.requestToTransaction(transactionRequest);
-        transactionsService.deposit(deposit, userId);
-        return ResponseEntity.ok(deposit);
+        TransactionResponse response = transactionsService.deposit(deposit, userId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Transaction> transfer(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
+    public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing transfer: {}", transactionRequest);
         UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction transfer = transactionMapper.requestToTransaction(transactionRequest);
-        transactionsService.transfer(transfer, userId);
-        return ResponseEntity.ok(transfer);
+        TransactionResponse response = transactionsService. transfer(transfer, userId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/payment")

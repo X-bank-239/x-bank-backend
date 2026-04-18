@@ -9,6 +9,7 @@ import com.example.xbankbackend.exceptions.TransactionNotFoundException;
 import com.example.xbankbackend.mappers.TransactionMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.TransactionsRepository;
+import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.bankAccount.BankAccountValidationService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesValidationService;
@@ -53,6 +54,10 @@ class TransactionsServiceTest {
     @Mock
     private BalanceOperationService balanceOperationService;
 
+    @Mock
+    private FeeService feeService;
+
+
     @InjectMocks
     private TransactionsService service;
 
@@ -70,6 +75,7 @@ class TransactionsServiceTest {
             doNothing().when(bankAccountValidationService).validateBankAccountActive(receiverId);
             doNothing().when(transactionValidationService).validateDepositStructure(tx);
             doNothing().when(transactionValidationService).validateAmountPositive(tx.getAmount());
+            when(transactionMapper.transactionToResponse(any())).thenReturn(new TransactionResponse());
 
             service.deposit(tx, userId);
 
@@ -99,7 +105,8 @@ class TransactionsServiceTest {
             doNothing().when(transactionValidationService).validateUserIsOwner(senderId, userId);
             doNothing().when(transactionValidationService).validateAmountPositive(tx.getAmount());
             doNothing().when(bankAccountValidationService).validateSufficientFundsWithFee(senderId, tx.getAmount());
-
+            when(feeService.getBaseFeeAmount(tx.getAmount())).thenReturn(BigDecimal.ZERO);
+            when(transactionMapper.transactionToResponse(any())).thenReturn(new TransactionResponse());
             service.transfer(tx, userId);
 
             verify(transactionsRepository).addTransaction(tx);
@@ -124,7 +131,8 @@ class TransactionsServiceTest {
             doNothing().when(transactionValidationService).validateUserIsOwner(senderId, userId);
             doNothing().when(transactionValidationService).validateAmountPositive(tx.getAmount());
             doNothing().when(bankAccountValidationService).validateSufficientFundsWithFee(senderId, tx.getAmount());
-
+            when(feeService.getBaseFeeAmount(any())).thenReturn(BigDecimal.ZERO);
+            when(transactionMapper.transactionToResponse(any())).thenReturn(new TransactionResponse());
             service.pay(tx, userId);
 
             verify(transactionsRepository).addTransaction(tx);
@@ -275,7 +283,15 @@ class TransactionsServiceTest {
         tx.setComment("Test deposit");
         return tx;
     }
-
+    private TransactionResponse buildValidDepositResponse(){
+        TransactionResponse txr = new TransactionResponse();
+        txr.setAmount(BigDecimal.valueOf(100));
+        txr.setCurrency(CurrencyType.RUB);
+        txr.setTransactionType(TransactionType.DEPOSIT);
+        txr.setComment("Test deposit");
+        txr.setCommission(BigDecimal.valueOf(0));
+        return txr;
+    }
     private Transaction buildValidTransfer() {
         Transaction tx = new Transaction();
         tx.setSenderId(UUID.randomUUID());
