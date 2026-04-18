@@ -6,12 +6,14 @@ import com.example.xbankbackend.enums.TransactionStatus;
 import com.example.xbankbackend.mappers.TransactionMapper;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.TransactionsRepository;
+import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.bankAccount.BankAccountValidationService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesValidationService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +30,9 @@ public class TransactionsService {
     private final BankAccountValidationService bankAccountValidationService;
     private final TransactionCategoriesValidationService categoriesValidationService;
     private final BalanceOperationService balanceOperationService;
+    private final FeeService feeService;
 
-    public void deposit(Transaction tx, UUID authenticatedUserId) {
+    public TransactionResponse deposit(Transaction tx, UUID authenticatedUserId) {
         UUID receiverId = tx.getReceiverId();
 
         bankAccountValidationService.validateBankAccountExists(receiverId);
@@ -39,11 +42,15 @@ public class TransactionsService {
         transactionValidationService.validateAmountPositive(tx.getAmount());
 
         prepareAndSaveTransaction(tx);
-
         balanceOperationService.increaseBalance(receiverId, tx.getAmount(), tx.getCurrency());
+
+        TransactionResponse transactionResponse = transactionMapper.transactionToResponse(tx);
+        transactionResponse.setCommission(BigDecimal.ZERO);
+
+        return transactionResponse;
     }
 
-    public void transfer(Transaction tx, UUID authenticatedUserId) {
+    public TransactionResponse transfer(Transaction tx, UUID authenticatedUserId) {
         UUID receiverId = tx.getReceiverId();
         UUID senderId = tx.getSenderId();
 
@@ -63,9 +70,14 @@ public class TransactionsService {
 
         balanceOperationService.decreaseBalanceWithFee(senderId, tx.getAmount(), tx.getCurrency());
         balanceOperationService.increaseBalance(receiverId, tx.getAmount(), tx.getCurrency());
+
+        TransactionResponse transactionResponse = transactionMapper.transactionToResponse(tx);
+        transactionResponse.setCommission(feeService.getBaseFeeAmount(tx.getAmount()));
+
+        return transactionResponse;
     }
 
-    public void pay(Transaction tx, UUID authenticatedUserId) {
+    public TransactionResponse pay(Transaction tx, UUID authenticatedUserId) {
         UUID senderId = tx.getSenderId();
 
         bankAccountValidationService.validateBankAccountExists(senderId);
@@ -80,6 +92,11 @@ public class TransactionsService {
         prepareAndSaveTransaction(tx);
 
         balanceOperationService.decreaseBalanceWithFee(senderId, tx.getAmount(), tx.getCurrency());
+
+        TransactionResponse transactionResponse = transactionMapper.transactionToResponse(tx);
+        transactionResponse.setCommission(feeService.getBaseFeeAmount(tx.getAmount()));
+
+        return transactionResponse;
     }
 
     private void prepareAndSaveTransaction(Transaction tx) {

@@ -38,4 +38,5 @@ public class Transaction {
     private String comment;
     private TransactionStatus status;
     private String category;
+    private BigDecimal commission;
 }
