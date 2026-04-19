@@ -64,6 +64,13 @@ public class UserRepository {
                 .execute();
     }
 
+    public void unblock(UUID userId) {
+        dsl.update(USERS)
+                .set(USERS.ACTIVE, true)
+                .where(USERS.USER_ID.eq(userId))
+                .execute();
+    }
+
     public String getHashedPassword(UUID userId) {
          return dsl.select(USERS.PASSWORD)
                  .from(USERS)

@@ -47,13 +47,6 @@ public class BankAccountController {
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
-    @DeleteMapping("/{accountId}")
-    public ResponseEntity<Void> deactivateAccount(@PathVariable UUID accountId) {
-        log.info("Deactivating account {}", accountId);
-        bankAccountService.deactivateAccount(accountId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     // ADMIN-only
 
     @GetMapping("/{accountId}")
@@ -70,5 +63,21 @@ public class BankAccountController {
         log.info("Getting account with for user {}", userId);
         BankAccountResponse bankAccount = bankAccountService.get(userId);
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
+    }
+
+    // ADMIN-only
+
+    @DeleteMapping("/{accountId}")
+    public ResponseEntity<Void> deactivateAccount(@PathVariable UUID accountId) {
+        log.info("Deactivating account {}", accountId);
+        bankAccountService.deactivateAccount(accountId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{accountId}/unblock")
+    public ResponseEntity<Void> reactivateAccount(@PathVariable UUID accountId) {
+        log.info("Reactivating account {}", accountId);
+        bankAccountService.reactivateAccount(accountId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -126,6 +126,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PostMapping("/{userId}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> unblockUser(@PathVariable UUID userId) {
+        log.info("Unblocking user with id {}", userId);
+        userService.blockUser(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserProfileResponse> getProfile(@PathVariable UUID userId) {

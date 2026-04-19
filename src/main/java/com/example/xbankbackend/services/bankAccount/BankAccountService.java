@@ -53,4 +53,10 @@ public class BankAccountService {
 
         bankAccountRepository.deactivate(accountId);
     }
+
+    public void reactivateAccount(UUID accountId) {
+        bankAccountValidationService.validateBankAccountExists(accountId);
+
+        bankAccountRepository.reactivate(accountId);
+    }
 }

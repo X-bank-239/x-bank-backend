@@ -89,6 +89,12 @@ public class UserService {
         userRepository.block(userId);
     }
 
+    public void unblockUser(UUID userId) {
+        userValidationService.validateUserExists(userId);
+
+        userRepository.unblock(userId);
+    }
+
     public String generateTokenByEmail(String email){
         User user = userRepository.getUserByEmail(email);
         return jwtUtil.generateToken(user.getUserId(), user.getRole().toString());
