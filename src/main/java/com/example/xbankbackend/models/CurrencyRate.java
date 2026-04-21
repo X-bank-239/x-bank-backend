@@ -1,4 +1,4 @@
-package com.example.xbankbackend.models.external.cbr;
+package com.example.xbankbackend.models;
 
 import com.example.xbankbackend.enums.CurrencyType;
 import jakarta.validation.constraints.NotNull;
@@ -22,4 +22,6 @@ public class CurrencyRate {
 
     @NotNull(message = "createdAt cannot be null")
     private OffsetDateTime createdAt;
+
+    private String comment;
 }

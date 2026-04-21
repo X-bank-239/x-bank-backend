@@ -1,0 +1,1 @@
+ALTER TABLE currency_rates ADD COLUMN comment VARCHAR(200) DEFAULT 'Без комментария';

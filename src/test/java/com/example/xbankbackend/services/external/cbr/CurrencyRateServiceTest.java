@@ -1,8 +1,9 @@
 package com.example.xbankbackend.services.external.cbr;
 
 import com.example.xbankbackend.enums.CurrencyType;
-import com.example.xbankbackend.models.external.cbr.CurrencyRate;
-import com.example.xbankbackend.repositories.external.cbr.CurrencyRateRepository;
+import com.example.xbankbackend.models.CurrencyRate;
+import com.example.xbankbackend.repositories.CurrencyRateRepository;
+import com.example.xbankbackend.services.currencyRate.CurrencyRateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

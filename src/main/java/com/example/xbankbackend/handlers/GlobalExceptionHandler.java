@@ -140,6 +140,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(RateNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleKeywordNotFoundException(RateNotFoundException ex) {
+        log.warn(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, "RATE_NOT_FOUND", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
     @ExceptionHandler(ArbitraryRepaymentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalRepaymentSum(ArbitraryRepaymentException ex) {
         log.warn(ex.getMessage());

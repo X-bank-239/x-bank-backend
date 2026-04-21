@@ -2,8 +2,7 @@ package com.example.xbankbackend.services.transaction;
 
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.repositories.BankAccountRepository;
-import com.example.xbankbackend.services.FeeService;
-import com.example.xbankbackend.services.external.cbr.CurrencyRateService;
+import com.example.xbankbackend.services.currencyRate.CurrencyRateService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
