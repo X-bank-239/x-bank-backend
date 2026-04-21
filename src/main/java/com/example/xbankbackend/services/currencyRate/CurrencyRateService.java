@@ -61,7 +61,7 @@ public class CurrencyRateService {
         if (to != CurrencyType.RUB) {
             toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
         }
-        return fromRate.divide(toRate, 4, RoundingMode.HALF_UP).multiply(amount);
+        return fromRate.multiply(amount).divide(toRate, 4, RoundingMode.HALF_UP);
     }
 
     public void createRate(CurrencyRate currencyRate) {
