@@ -39,6 +39,7 @@ public class CurrencyRateService {
                 log.info("Currency rate for {} of {} already exist, skipping update", date, entry.getKey());
                 continue;
             }
+            log.info("Updating {} rate for {}", entry.getKey(), date);
 
             CurrencyRate rate = new CurrencyRate();
             rate.setCurrency(entry.getKey());
@@ -61,7 +62,12 @@ public class CurrencyRateService {
         if (to != CurrencyType.RUB) {
             toRate = currencyRateRepository.findLatestByCurrency(to).getRate();
         }
-        return fromRate.multiply(amount).divide(toRate, 4, RoundingMode.HALF_UP);
+
+        BigDecimal convertedAmount = fromRate.multiply(amount).divide(toRate, 4, RoundingMode.HALF_UP);
+
+        log.info("Converted {} {} to {} {}", amount, from, convertedAmount, to);
+
+        return convertedAmount;
     }
 
     public void createRate(CurrencyRate currencyRate) {
@@ -74,6 +80,8 @@ public class CurrencyRateService {
         CurrencyRate rate = currencyRateRepository.findByCurrencyAndDate(currency, date);
         currencyMapper.updateCurrencyFromRequest(request, rate);
         currencyRateRepository.update(currency, date, rate);
+
+        log.info("Updated {} rate: {}", currency, rate);
 
         return rate;
     }

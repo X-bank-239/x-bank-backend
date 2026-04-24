@@ -64,7 +64,7 @@ public class CurrencyRatesController {
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CurrencyRate> createRate(@RequestBody @Valid CreateCurrencyRateRequest request) {
-        log.info("Creating rate {}", request);
+        log.info("[ADMIN] Creating rate {}", request);
 
         CurrencyRate currencyRate = currencyMapper.requestToCurrencyRate(request);
         currencyRateService.createRate(currencyRate);
@@ -77,7 +77,7 @@ public class CurrencyRatesController {
     public ResponseEntity<CurrencyRate> updateRate(@RequestParam CurrencyType currency,
                                                    @RequestParam LocalDate date,
                                                    @RequestBody @Valid UpdateCurrencyRateRequest request) {
-        log.info("Updating rate for {} on {}, {}", currency, date, request);
+        log.info("[ADMIN] Updating rate for {} on {}, {}", currency, date, request);
 
         CurrencyRate rate = currencyRateService.updateRate(currency, date, request);
 
@@ -87,7 +87,7 @@ public class CurrencyRatesController {
     @DeleteMapping("")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteRatesByDate(@RequestParam LocalDate date) {
-        log.info("Deleting rates for {}", date);
+        log.info("[ADMIN] Deleting rates for {}", date);
 
         currencyRateService.deleteRatesByDate(date);
 
@@ -97,7 +97,7 @@ public class CurrencyRatesController {
     @PostMapping("/sync-from-cbr")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> syncFromCbr(@RequestParam LocalDate date) {
-        log.info("Manual sync from cbr for {}", date);
+        log.info("[ADMIN] Manual sync from cbr for {}", date);
 
         currencyRateService.updateOnDate(date);
 

@@ -94,8 +94,10 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getCurrentUserProfile(Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
-        log.info("Getting user: {}", userId);
+        log.info("Getting user (me): {}", userId);
+
         UserProfileResponse userProfile = userService.getProfile(userId);
+
         return ResponseEntity.ok(userProfile);
     }
 
@@ -103,8 +105,9 @@ public class UserController {
     public ResponseEntity<Void> updateCurrentUserProfile(@RequestBody UpdatePasswordRequest passwordRequest, Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
         log.info("Updating password for user: {}", userId);
-        System.out.println(passwordRequest);
+
         userService.changePassword(userId, passwordRequest.getOldPassword(), passwordRequest.getNewPassword());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -113,40 +116,50 @@ public class UserController {
     @GetMapping("/get-accounts/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankAccountResponse>> getAccounts(@PathVariable UUID userId) {
-        log.info("Getting accounts for user with id {}", userId);
+        log.info("[ADMIN] Getting accounts for user with id {}", userId);
+
         List<BankAccountResponse> bankAccounts = userService.getAccounts(userId);
+
         return ResponseEntity.ok(bankAccounts);
     }
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> blockUser(@PathVariable UUID userId) {
-        log.info("Blocking user with id {}", userId);
+        log.info("[ADMIN] Blocking user with id {}", userId);
+
         userService.blockUser(userId);
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{userId}/unblock")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> unblockUser(@PathVariable UUID userId) {
-        log.info("Unblocking user with id {}", userId);
+        log.info("[ADMIN] Unblocking user with id {}", userId);
+
         userService.blockUser(userId);
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserProfileResponse> getProfile(@PathVariable UUID userId) {
-        log.info("Getting user: {}", userId);
+        log.info("[ADMIN] Getting user with id: {}", userId);
+
         UserProfileResponse userProfile = userService.getProfile(userId);
+
         return ResponseEntity.ok(userProfile);
     }
 
     @GetMapping("/email/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserProfileResponse> getProfileByEmail(@PathVariable String email, Authentication auth) {
-        log.info("Getting user: {}", email);
+        log.info("[ADMIN] Getting user with email: {}", email);
+
         UserProfileResponse userProfile = userService.getProfileByEmail(email);
+
         return ResponseEntity.ok(userProfile);
     }
 }

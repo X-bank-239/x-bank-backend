@@ -52,32 +52,40 @@ public class BankAccountController {
     @GetMapping("/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BankAccountResponse> getAccountById(@PathVariable UUID accountId) {
-        log.info("Getting account with id {}", accountId);
+        log.info("[ADMIN] Getting account with id {}", accountId);
+
         BankAccountResponse bankAccount = bankAccountService.get(accountId);
+
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
     @GetMapping("/list/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BankAccountResponse> getAccountsByUserId(@PathVariable UUID userId) {
-        log.info("Getting account with for user {}", userId);
+        log.info("[ADMIN] Getting account with for user {}", userId);
+
         BankAccountResponse bankAccount = bankAccountService.get(userId);
+
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
-    // ADMIN-only
-
     @DeleteMapping("/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateAccount(@PathVariable UUID accountId) {
-        log.info("Deactivating account {}", accountId);
+        log.info("[ADMIN] Deactivating account {}", accountId);
+
         bankAccountService.deactivateAccount(accountId);
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/{accountId}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> reactivateAccount(@PathVariable UUID accountId) {
-        log.info("Reactivating account {}", accountId);
+        log.info("[ADMIN] Reactivating account {}", accountId);
+
         bankAccountService.reactivateAccount(accountId);
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
