@@ -28,7 +28,7 @@ public class CategoriesController {
 
     @GetMapping("/{code}")
     public ResponseEntity<TransactionCategory> getCategories(@PathVariable String code) {
-        log.info("Getting category with code {}", code);
+        log.info("[ADMIN] Getting category with code {}", code);
 
         TransactionCategory category = categoriesService.getCategory(code);
         return ResponseEntity.status(HttpStatus.OK).body(category);
@@ -36,7 +36,7 @@ public class CategoriesController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TransactionCategory>> getCategories() {
-        log.info("Getting all categories");
+        log.info("[ADMIN] Getting all categories");
 
         List<TransactionCategory> categories = categoriesService.getAllCategories();
         return ResponseEntity.status(HttpStatus.OK).body(categories);
@@ -44,7 +44,7 @@ public class CategoriesController {
 
     @PostMapping("")
     public ResponseEntity<TransactionCategory> createCategory(@Valid @RequestBody CreateCategoryRequest categoryRequest) {
-        log.info("Creating new category {}", categoryRequest.getCode());
+        log.info("[ADMIN] Creating new category {}", categoryRequest.getCode());
 
         TransactionCategory category = transactionCategoryMapper.requestToCategory(categoryRequest);
         categoriesService.createCategory(category);
@@ -53,7 +53,7 @@ public class CategoriesController {
 
     @PatchMapping("/{code}")
     public ResponseEntity<TransactionCategory> updateCategory(@PathVariable String code, @RequestBody UpdateCategoryRequest request) {
-        log.info("Updating category with code {}, request: {}", code, request.toString());
+        log.info("[ADMIN] Updating category with code {}, request: {}", code, request.toString());
 
         TransactionCategory category = categoriesService.updateCategory(code, request);
         return ResponseEntity.status(HttpStatus.OK).body(category);
@@ -61,7 +61,7 @@ public class CategoriesController {
 
     @DeleteMapping("/{code}")
     public ResponseEntity<Void> deleteCategory(@PathVariable String code) {
-        log.info("Deleting category with code {}", code);
+        log.info("[ADMIN] Deleting category with code {}", code);
 
         categoriesService.deleteCategory(code);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

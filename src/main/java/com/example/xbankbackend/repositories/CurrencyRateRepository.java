@@ -1,8 +1,8 @@
-package com.example.xbankbackend.repositories.external.cbr;
+package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.mappers.CurrencyTypeMapper;
-import com.example.xbankbackend.models.external.cbr.CurrencyRate;
+import com.example.xbankbackend.models.CurrencyRate;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
@@ -21,7 +21,7 @@ public class CurrencyRateRepository {
 
     public void create(CurrencyRate rate) {
         dsl.insertInto(CURRENCY_RATES)
-                .values(rate.getCurrency(), rate.getRate(), rate.getDate(), rate.getCreatedAt())
+                .values(rate.getCurrency(), rate.getRate(), rate.getDate(), rate.getCreatedAt(), rate.getComment())
                 .execute();
     }
 
@@ -30,6 +30,35 @@ public class CurrencyRateRepository {
                 .where(CURRENCY_RATES.DATE.eq(date))
                 .fetch()
                 .isNotEmpty();
+    }
+
+    public boolean existsByCurrencyAndDate(CurrencyType currency, LocalDate date) {
+        return dsl.selectFrom(CURRENCY_RATES)
+                .where(CURRENCY_RATES.CURRENCY.eq(currencyTypeMapper.toGenerated(currency)))
+                .and(CURRENCY_RATES.DATE.eq(date))
+                .fetch()
+                .isNotEmpty();
+    }
+
+    public void update(CurrencyType currency, LocalDate date, CurrencyRate rate) {
+        dsl.update(CURRENCY_RATES)
+                .set(CURRENCY_RATES.RATE, rate.getRate())
+                .set(CURRENCY_RATES.COMMENT, rate.getComment())
+                .where(CURRENCY_RATES.CURRENCY.eq(currencyTypeMapper.toGenerated(currency)))
+                .and(CURRENCY_RATES.DATE.eq(date))
+                .execute();
+    }
+
+    public void deleteRatesByDate(LocalDate date) {
+        dsl.deleteFrom(CURRENCY_RATES)
+                .where(CURRENCY_RATES.DATE.eq(date))
+                .execute();
+    }
+
+    public List<CurrencyRate> findByDate(LocalDate date) {
+        return dsl.selectFrom(CURRENCY_RATES)
+                .where(CURRENCY_RATES.DATE.eq(date))
+                .fetchInto(CurrencyRate.class);
     }
 
     public CurrencyRate findByCurrencyAndDate(CurrencyType currency, LocalDate date) {

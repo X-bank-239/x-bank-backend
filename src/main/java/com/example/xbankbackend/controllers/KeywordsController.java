@@ -28,7 +28,7 @@ public class KeywordsController {
 
     @GetMapping("/{categoryCode}")
     public ResponseEntity<List<TransactionKeyword>> getKeywordsByCategory(@PathVariable String categoryCode) {
-        log.info("Getting keywords for category {}", categoryCode);
+        log.info("[ADMIN] Getting keywords for category {}", categoryCode);
 
         List<TransactionKeyword> keywords = keywordService.getKeywordsByCategory(categoryCode);
         return ResponseEntity.status(HttpStatus.OK).body(keywords);
@@ -36,7 +36,7 @@ public class KeywordsController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TransactionKeyword>> getAllKeywords() {
-        log.info("Getting all keywords");
+        log.info("[ADMIN] Getting all keywords");
 
         List<TransactionKeyword> keywords = keywordService.getAllKeywords();
         return ResponseEntity.status(HttpStatus.OK).body(keywords);
@@ -44,7 +44,7 @@ public class KeywordsController {
 
     @PostMapping("")
     public ResponseEntity<TransactionKeyword> createKeyword(@Valid @RequestBody CreateKeywordRequest request) {
-        log.info("Creating keyword {}", request.toString());
+        log.info("[ADMIN] Creating keyword {}", request.toString());
 
         TransactionKeyword keyword = keywordMapper.requestToKeyword(request);
         keywordService.createKeyword(keyword);
@@ -55,7 +55,7 @@ public class KeywordsController {
     public ResponseEntity<TransactionKeyword> updateKeyword(@PathVariable String categoryCode,
                                                             @RequestParam String word,
                                                             @Valid @RequestBody UpdateKeywordRequest request) {
-        log.info("Updating keyword, category {}, word: {}, request: {}", categoryCode, word, request.toString());
+        log.info("[ADMIN] Updating keyword, category {}, word: {}, request: {}", categoryCode, word, request.toString());
 
         TransactionKeyword keyword = keywordService.updateKeyword(categoryCode, word, request);
         return ResponseEntity.status(HttpStatus.OK).body(keyword);
@@ -64,7 +64,7 @@ public class KeywordsController {
     @DeleteMapping("/{categoryCode}")
     public ResponseEntity<Void> deleteKeyword(@PathVariable String categoryCode,
                                               @RequestParam String word) {
-        log.info("Deleting keyword, category: {}, word: {}", categoryCode, word);
+        log.info("[ADMIN] Deleting keyword, category: {}, word: {}", categoryCode, word);
 
         keywordService.deleteKeyword(categoryCode, word);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

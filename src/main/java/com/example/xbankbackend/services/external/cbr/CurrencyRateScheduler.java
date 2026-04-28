@@ -1,5 +1,6 @@
 package com.example.xbankbackend.services.external.cbr;
 
+import com.example.xbankbackend.services.currencyRate.CurrencyRateService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;

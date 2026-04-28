@@ -32,6 +32,13 @@ public class BankAccountRepository {
                 .execute();
     }
 
+    public void reactivate(UUID accountId) {
+        dsl.update(BANK_ACCOUNTS)
+                .set(BANK_ACCOUNTS.ACTIVE, true)
+                .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))
+                .execute();
+    }
+
     public boolean isActive(UUID accountId) {
         return dsl.selectFrom(BANK_ACCOUNTS)
                 .where(BANK_ACCOUNTS.ACCOUNT_ID.eq(accountId))

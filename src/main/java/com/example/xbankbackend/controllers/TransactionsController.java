@@ -95,7 +95,7 @@ public class TransactionsController {
     @PutMapping("/cancel/{transactionId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> cancelTransaction(@PathVariable UUID transactionId) {
-        log.info("Cancelling transaction with id {}", transactionId);
+        log.info("[ADMIN] Cancelling transaction with id {}", transactionId);
 
         transactionsService.cancelTransaction(transactionId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

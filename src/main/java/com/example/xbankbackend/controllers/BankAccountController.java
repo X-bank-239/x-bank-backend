@@ -47,28 +47,45 @@ public class BankAccountController {
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
-    @DeleteMapping("/{accountId}")
-    public ResponseEntity<Void> deactivateAccount(@PathVariable UUID accountId) {
-        log.info("Deactivating account {}", accountId);
-        bankAccountService.deactivateAccount(accountId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     // ADMIN-only
 
     @GetMapping("/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BankAccountResponse> getAccountById(@PathVariable UUID accountId) {
-        log.info("Getting account with id {}", accountId);
+        log.info("[ADMIN] Getting account with id {}", accountId);
+
         BankAccountResponse bankAccount = bankAccountService.get(accountId);
+
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
     @GetMapping("/list/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BankAccountResponse> getAccountsByUserId(@PathVariable UUID userId) {
-        log.info("Getting account with for user {}", userId);
+        log.info("[ADMIN] Getting account with for user {}", userId);
+
         BankAccountResponse bankAccount = bankAccountService.get(userId);
+
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
+    }
+
+    @DeleteMapping("/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deactivateAccount(@PathVariable UUID accountId) {
+        log.info("[ADMIN] Deactivating account {}", accountId);
+
+        bankAccountService.deactivateAccount(accountId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{accountId}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> reactivateAccount(@PathVariable UUID accountId) {
+        log.info("[ADMIN] Reactivating account {}", accountId);
+
+        bankAccountService.reactivateAccount(accountId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
