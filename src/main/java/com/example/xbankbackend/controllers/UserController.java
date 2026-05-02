@@ -138,7 +138,7 @@ public class UserController {
     public ResponseEntity<Void> unblockUser(@PathVariable UUID userId) {
         log.info("[ADMIN] Unblocking user with id {}", userId);
 
-        userService.blockUser(userId);
+        userService.unblockUser(userId);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
