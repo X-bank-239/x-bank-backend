@@ -20,20 +20,20 @@ public class BankAccountValidationService {
 
     public void validateBankAccountExists(UUID accountId) {
         if (!bankAccountRepository.exists(accountId)) {
-            throw new BankAccountNotFoundException("Account with UUID " + accountId + " does not exist");
+            throw new BankAccountNotFoundException("Счёт с UUID " + accountId + " не существует");
         }
     }
 
     public void validateBankAccountActive(UUID accountId) {
         if (!bankAccountRepository.isActive(accountId)) {
-            throw new AccessDeniedException("Bank account with id " + accountId + " is deactivated");
+            throw new AccessDeniedException("Счёт с UUID " + accountId + " деактивирован");
         }
     }
 
     public void validateSufficientFundsWithFee(UUID accountId, BigDecimal amount) {
         BigDecimal balance = bankAccountRepository.getBalance(accountId);
         if (feeService.applyBaseFee(amount).compareTo(balance) >= 0) {
-            throw new InsufficientFundsException("Sender balance must be not less than transaction amount");
+            throw new InsufficientFundsException("Баланс отправителя должен быть не меньше суммы транзакции");
         }
     }
 }

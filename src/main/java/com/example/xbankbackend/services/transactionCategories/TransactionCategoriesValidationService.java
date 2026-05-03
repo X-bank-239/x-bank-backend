@@ -20,25 +20,25 @@ public class TransactionCategoriesValidationService {
 
     public void validateCategoryExists(String categoryCode) {
         if (!categoriesRepository.existsByCode(categoryCode)) {
-            throw new CategoryNotFoundException("Category with code " + categoryCode + " doesn't exist");
+            throw new CategoryNotFoundException("Категория с кодом " + categoryCode + " не существует");
         }
     }
 
     public void validateCategoryIsUnique(String categoryCode) {
         if (categoriesRepository.existsByCode(categoryCode)) {
-            throw new ConflictException("Category with code " + categoryCode + " already exists");
+            throw new ConflictException("Категория с кодом " + categoryCode + " уже существует");
         }
     }
 
     public void validateCategoryCode(String categoryCode) {
         if (categoryCode.contains(" ")) {
-            throw new IllegalArgumentException("Code cannot contain spaces");
+            throw new IllegalArgumentException("Код не может содержать пробелы");
         }
     }
 
     public void validateHexColor(String colorCode) {
         if (!HEX_PATTERN.matcher(colorCode).matches()) {
-            throw new IllegalArgumentException("Color code " + colorCode + " is not valid HEX");
+            throw new IllegalArgumentException("Цвет " + colorCode + " - недопустимый HEX");
         }
     }
 }

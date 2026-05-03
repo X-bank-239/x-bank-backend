@@ -13,10 +13,10 @@ public class UserPasswordService {
 
     public void validatePasswordChange(String oldPassword, String newPassword, String hashedPassword) {
         if (!passwordEncoder.matches(oldPassword, hashedPassword)) {
-            throw new BadCredentialsException("Old password doesn't match actual password");
+            throw new BadCredentialsException("Старый пароль не соответствует текущему паролю");
         }
         if (oldPassword.equals(newPassword)) {
-            throw new IllegalArgumentException("New password cannot math old one");
+            throw new IllegalArgumentException("Новый пароль не может совпадать со старым");
         }
     }
 

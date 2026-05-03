@@ -26,7 +26,7 @@ public class UserValidationService {
 
     public void validateEmail(String email) {
         if (!EMAIL_PATTERN.matcher(email).matches()) {
-            throw new UserGivesIncorrectEmail(email + " is not a valid email address");
+            throw new UserGivesIncorrectEmail(email + " - некорректный адрес электронной почты");
         }
     }
 
@@ -36,34 +36,34 @@ public class UserValidationService {
         Date minDate = cal.getTime();
 
         if (userBirthdate.after(minDate)) {
-            throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too young");
+            throw new IllegalArgumentException("Пользователь должен быть старше " + MIN_USER_AGE + " лет");
         }
 
         cal.add(Calendar.YEAR, -(MAX_USER_AGE - MIN_USER_AGE));
         Date maxDate = cal.getTime();
 
         if (userBirthdate.before(maxDate)) {
-            throw new IllegalArgumentException("Birthdate " + userBirthdate + " is too old");
+            throw new IllegalArgumentException("Пользователь должен быть младше " + MAX_USER_AGE + " лет");
         }
     }
 
     public void validateUserExists(UUID userId) {
         if (!userRepository.exists(userId)) {
-            throw new UserNotFoundException("User with UUID " + userId + " already exists");
+            throw new UserNotFoundException("Пользователь с UUID " + userId + " уже существует");
         }
     }
 
     public void validateUserExistsByEmail(String email) {
         validateEmail(email);
         if (!userRepository.existsByEmail(email)) {
-            throw new UserNotFoundException("User with email " + email + " already exists");
+            throw new UserNotFoundException("Пользователь с email " + email + " уже существует");
         }
     }
 
     public void validateEmailIsUnique(String email) {
         validateEmail(email);
         if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException("User with email " + email + " already exists");
+            throw new UserAlreadyExistsException("Пользователь с email " + email + " не существует");
         }
     }
 }

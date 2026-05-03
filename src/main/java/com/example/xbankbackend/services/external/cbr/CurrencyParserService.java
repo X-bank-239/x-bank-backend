@@ -23,14 +23,14 @@ public class CurrencyParserService {
         try {
             doc = Jsoup.parse(xmlResponse, "", Parser.xmlParser());
         } catch (Exception e) {
-            throw new CurrencyParsingException("Failed to parse XML response");
+            throw new CurrencyParsingException("Не удалось проанализировать XML-ответ");
         }
 
         Map<CurrencyType, BigDecimal> rates = new HashMap<>();
 
         Elements valuteElements = doc.select("ValuteCursOnDate");
         if (valuteElements.isEmpty()) {
-            throw new CurrencyParsingException("No currency data found in XML response");
+            throw new CurrencyParsingException("В XML-ответе не найдено данных о валюте");
         }
 
         for (Element val : valuteElements) {
@@ -41,7 +41,7 @@ public class CurrencyParserService {
                     rates.put(CurrencyType.valueOf(currencyCode), rate);
                 }
             } catch (Exception e) {
-                log.error("Error parsing currency element", e);
+                log.error("Ошибка при парсинге валюты", e);
             }
         }
 

@@ -15,7 +15,7 @@ public class SecurityUtil {
         if (authentication != null && authentication.isAuthenticated()) {
             return (UUID) authentication.getPrincipal();
         }
-        throw new IllegalStateException("User not authenticated");
+        throw new IllegalStateException("Пользователь не аутентифицирован");
     }
 }
 

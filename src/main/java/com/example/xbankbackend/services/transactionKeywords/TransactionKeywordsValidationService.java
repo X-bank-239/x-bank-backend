@@ -14,13 +14,13 @@ public class TransactionKeywordsValidationService {
 
     public void validateKeywordAndCodeExist(String categoryCode, String word) {
         if (!keywordsRepository.existsByCodeAndWord(categoryCode, word)) {
-            throw new KeywordNotFoundException("Category with code " + categoryCode + " and word " + word + " doesn't exist");
+            throw new KeywordNotFoundException("Категория с кодом " + categoryCode + " и словом " + word + " не существует");
         }
     }
 
     public void validateKeywordAndCodeAreUnique(String categoryCode, String word) {
         if (keywordsRepository.existsByCodeAndWord(categoryCode, word)) {
-            throw new ConflictException("Category with code " + categoryCode + " and word " + word + " already exists");
+            throw new ConflictException("Категория с кодом " + categoryCode + " и словом " + word + " уже существует");
         }
     }
 }

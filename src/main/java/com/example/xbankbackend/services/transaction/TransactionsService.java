@@ -142,10 +142,10 @@ public class TransactionsService {
         bankAccountValidationService.validateBankAccountExists(accountId);
 
         if (page < 0) {
-            throw new IllegalArgumentException("Page "  + page + " cannot be negative");
+            throw new IllegalArgumentException("Страница "  + page + " не может быть отрицательным");
         }
         if (size < 0) {
-            throw new IllegalArgumentException("Size " + size + " cannot be negative");
+            throw new IllegalArgumentException("Размер страницы " + size + " не может быть отрицательным");
         }
 
         List<Transaction> transactions = transactionsRepository.getTransactions(accountId, page, size);

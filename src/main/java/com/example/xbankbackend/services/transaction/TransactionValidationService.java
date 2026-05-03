@@ -21,7 +21,7 @@ public class TransactionValidationService {
 
     public void validateAmountPositive(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new IllegalArgumentException("Сумма должна быть положительной");
         }
     }
 
@@ -29,46 +29,46 @@ public class TransactionValidationService {
     public void validateUserIsOwner(UUID accountId, UUID authenticatedUserId) {
         UUID ownerId = bankAccountRepository.getUserId(accountId);
         if (!authenticatedUserId.equals(ownerId)) {
-            throw new UserIsNotABankAccountOwner("Authenticated user is not the bank account owner");
+            throw new UserIsNotABankAccountOwner("Пользователь не является владельцем аккаунта");
         }
     }
 
     public void validateTransactionExists(UUID transactionId) {
         if (!transactionsRepository.exists(transactionId)) {
-            throw new TransactionNotFoundException("Transaction with id " + transactionId + " not found");
+            throw new TransactionNotFoundException("Транзакция с UUID " + transactionId + " не найдена");
         }
     }
 
     public void validateDepositStructure(Transaction tx) {
         if (tx.getReceiverId() == null) {
-            throw new IllegalArgumentException("ReceiverId cannot be null (Deposit)");
+            throw new IllegalArgumentException("ReceiverId не может быть null (Deposit)");
         }
         if (tx.getSenderId() != null) {
-            throw new IllegalArgumentException("SenderId must be null (Deposit)");
+            throw new IllegalArgumentException("SenderId должен быть null (Deposit)");
         }
         if (tx.getTransactionType() != TransactionType.DEPOSIT) {
-            throw new IllegalArgumentException("Expected transaction type DEPOSIT");
+            throw new IllegalArgumentException("Ожидается тип транзакции DEPOSIT");
         }
     }
 
     public void validateTransferStructure(Transaction tx) {
         if (tx.getSenderId() == null || tx.getReceiverId() == null) {
-            throw new IllegalArgumentException("Both SenderId and ReceiverId are required (Transfer)");
+            throw new IllegalArgumentException("Оба SenderId и ReceiverId не могут быть null (Transfer)");
         }
         if (tx.getTransactionType() != TransactionType.TRANSFER) {
-            throw new IllegalArgumentException("Expected transaction type TRANSFER");
+            throw new IllegalArgumentException("Ожидается тип транзакции TRANSFER");
         }
     }
 
     public void validatePaymentStructure(Transaction tx) {
         if (tx.getSenderId() == null) {
-            throw new IllegalArgumentException("SenderId cannot be null (Payment)");
+            throw new IllegalArgumentException("SenderId не может быть null (Payment)");
         }
         if (tx.getReceiverId() != null) {
-            throw new IllegalArgumentException("ReceiverId must be null (Payment)");
+            throw new IllegalArgumentException("ReceiverId должен быть null (Payment)");
         }
         if (tx.getTransactionType() != TransactionType.PAYMENT) {
-            throw new IllegalArgumentException("Expected transaction type PAYMENT");
+            throw new IllegalArgumentException("Ожидается тип транзакции PAYMENT");
         }
     }
 }
