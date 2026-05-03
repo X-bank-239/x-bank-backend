@@ -16,13 +16,13 @@ public class CurrencyRateValidationService {
 
     public void validateCurrencyRateExistsByDate(LocalDate date) {
         if (!currencyRateRepository.existsByDate(date)) {
-            throw new RateNotFoundException("Rate for date " + date + " not found");
+            throw new RateNotFoundException("Курс на дату " + date + " не найден");
         }
     }
 
     public void validateCurrencyRateExistsByCurrencyAndDate(CurrencyType currency, LocalDate date) {
         if (!currencyRateRepository.existsByCurrencyAndDate(currency, date)) {
-            throw new RateNotFoundException("Rate for date " + date + " and currency " + currency + " not found");
+            throw new RateNotFoundException("Курс на дату " + date + " и валюту " + currency + " не найден");
         }
     }
 }

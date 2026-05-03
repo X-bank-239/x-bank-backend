@@ -45,7 +45,7 @@ public class EmailSender {
             helper.setText("Ваш код для входа: <b>" + code + "</b>. Действует 5 минут.", true);
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email", e);
+            throw new RuntimeException("Не удалось отправить email", e);
         }
     }
 }

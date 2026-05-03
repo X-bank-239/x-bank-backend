@@ -12,7 +12,7 @@ import java.util.List;
 public class UserProfileMapper {
     public UserProfileResponse map(User user, List<BankAccount> account){
         if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
+            throw new IllegalArgumentException("Пользователь не может быть null");
         }
         UserProfileResponse userProfileResponse = UserProfileResponse.builder()
                 .userId(user.getUserId())

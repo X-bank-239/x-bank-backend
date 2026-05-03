@@ -52,11 +52,11 @@ public class LoanService {
         validateAccountExists(serviceAccountId);
 
         if (!bankAccountRepository.getUserId(creditAccountId).equals(authenticatedUserId)) {
-            throw new AccessDeniedException("Authenticated user is not the credit account owner");
+            throw new AccessDeniedException("Пользователь " + authenticatedUserId + " не является владельцем кредитного счёта " + creditAccountId);
         }
 
         if (bankAccountRepository.getAccountType(creditAccountId) != BankAccountType.CREDIT) {
-            throw new IllegalArgumentException("Credit account must have CREDIT type");
+            throw new IllegalArgumentException("У счёта должен быть тип CREDIT");
         }
 
         CurrencyType loanCurrency = bankAccountRepository.getCurrency(creditAccountId);
@@ -96,7 +96,7 @@ public class LoanService {
         BigDecimal expectedPayment = scaleMoney(loan.getMonthlyPayment());
         BigDecimal providedAmount = scaleMoney(request.getAmount());
         if (providedAmount.compareTo(expectedPayment) != 0) {
-            throw new LoanRepaymentAmountMismatchException("Arbitrary repayment amounts are not allowed. Monthly repayment must equal annuity amount");
+            throw new LoanRepaymentAmountMismatchException("Произвольные суммы погашения не допускаются. Ежемесячные выплаты должны быть равны сумме аннуитета");
         }
 
         transferRepaymentFromCreditAccount(creditAccountId, loan, providedAmount);
@@ -134,7 +134,7 @@ public class LoanService {
         BigDecimal requiredAmount = scaleMoney(loan.getOutstandingPrincipal().multiply(months));
         BigDecimal providedAmount = scaleMoney(request.getAmount());
         if (providedAmount.compareTo(requiredAmount) != 0) {
-            throw new LoanRepaymentAmountMismatchException("Arbitrary repayment amounts are not allowed. Early repayment must close the remaining principal in full");
+            throw new LoanRepaymentAmountMismatchException("Произвольные суммы погашения не допускаются. Досрочное погашение должно полностью покрыть оставшуюся сумму основного долга");
         }
 
         transferRepaymentFromCreditAccount(creditAccountId, loan, providedAmount);
@@ -171,10 +171,10 @@ public class LoanService {
 
     BigDecimal calculateAnnuityPayment(BigDecimal principalAmount, int termMonths) {
         if (principalAmount == null || principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Principal amount must be positive");
+            throw new IllegalArgumentException("Основная сумма должна быть положительной");
         }
         if (termMonths <= 0) {
-            throw new IllegalArgumentException("Term months must be positive");
+            throw new IllegalArgumentException("Количество месяцев должно быть положительно");
         }
 
         double monthlyRate = getMonthlyRate().doubleValue();
@@ -186,18 +186,18 @@ public class LoanService {
 
     public List<LoanResponse> getLoansByUser(UUID userId) {
         if (!userRepository.exists(userId)) {
-            throw new UserNotFoundException("User with UUID " + userId + " does not exist");
+            throw new UserNotFoundException("Пользователь с UUID " + userId + " не существует");
         }
         List<Loan> loans = loanRepository.getLoans(userId);
         return mapper.loansToResponses(loans);
     }
     private Loan getOwnedLoan(UUID loanId, UUID authenticatedUserId) {
         if (!loanRepository.exists(loanId)) {
-            throw new LoanNotFoundException("Loan with UUID " + loanId + " does not exist");
+            throw new LoanNotFoundException("Кредит с UUID " + loanId + " не существует");
         }
         Loan loan = loanRepository.get(loanId);
         if (!loan.getUserId().equals(authenticatedUserId)) {
-            throw new AccessDeniedException("Authenticated user is not the loan owner");
+            throw new AccessDeniedException("Пользователь " + authenticatedUserId + " не является владельцем кредита " + loanId);
         }
         return loan;
     }
@@ -205,7 +205,7 @@ public class LoanService {
     private Loan getActiveOwnedLoan(UUID loanId, UUID authenticatedUserId) {
         Loan loan = getOwnedLoan(loanId, authenticatedUserId);
         if (loan.getStatus() != LoanStatus.ACTIVE) {
-            throw new LoanClosedException("Loan is already closed");
+            throw new LoanClosedException("Кредит уже погашен");
         }
         return loan;
     }
@@ -214,7 +214,7 @@ public class LoanService {
         validateAccountExists(creditAccountId);
         return loanRepository.findActiveByCreditAccountIdAndUserId(creditAccountId, authenticatedUserId)
                 .orElseThrow(() -> new LoanNotFoundException(
-                        "No active loan for credit account " + creditAccountId));
+                        "Нет активного кредита на счету " + creditAccountId));
     }
 
     private void saveCompletedTransaction(Transaction tx) {
@@ -226,10 +226,10 @@ public class LoanService {
 
     private void transferFromCreditAccountToService(UUID creditAccountId, UUID serviceId, BigDecimal amount, CurrencyType currency) {
         if (bankAccountRepository.getBalance(creditAccountId).compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Credit account balance must be greater than or equal to repayment amount");
+            throw new InsufficientFundsException("Остаток на кредитном счете должен быть больше или равен сумме погашения");
         }
         if (!bankAccountRepository.isActive(serviceId)) {
-            throw new AccessDeniedException("Service account is deactivated");
+            throw new AccessDeniedException("Сервисный счёт неактивен");
         }
         Transaction tx = Transaction.builder()
                 .transactionType(TransactionType.TRANSFER)
@@ -246,7 +246,7 @@ public class LoanService {
 
     private void validateAccountExists(UUID accountId) {
         if (!bankAccountRepository.exists(accountId)) {
-            throw new BankAccountNotFoundException("Bank account with UUID " + accountId + " doesn't exist");
+            throw new BankAccountNotFoundException("Счёт с UUID " + accountId + " не существует");
         }
     }
 
@@ -254,22 +254,22 @@ public class LoanService {
         UUID creditAccountId = loan.getCreditAccountId();
         validateAccountExists(creditAccountId);
         if (!bankAccountRepository.getUserId(creditAccountId).equals(authenticatedUserId)) {
-            throw new AccessDeniedException("Authenticated user is not the credit account owner");
+            throw new AccessDeniedException("Пользователь " + authenticatedUserId + " не является владельцем кредитного счёта " + creditAccountId);
         }
         if (bankAccountRepository.getAccountType(creditAccountId) != BankAccountType.CREDIT) {
-            throw new IllegalArgumentException("Loan-linked account must have CREDIT type");
+            throw new IllegalArgumentException("Счет, связанный с получением кредита, должен иметь тип CREDIT");
         }
         if (!bankAccountRepository.getCurrency(creditAccountId).equals(loan.getCurrency())) {
-            throw new DifferentCurrencyException("Credit account currency must match loan currency");
+            throw new DifferentCurrencyException("Валюта кредитного счета должна совпадать с валютой кредита");
         }
         if (!bankAccountRepository.isActive(creditAccountId)) {
-            throw new AccessDeniedException("Credit account is deactivated");
+            throw new AccessDeniedException("Кредитный счёт деактивирован");
         }
     }
 
     private void transferRepaymentFromCreditAccount(UUID creditAccountId, Loan loan, BigDecimal amount) {
         if (!loan.getCreditAccountId().equals(creditAccountId)) {
-            throw new AccessDeniedException("Repayment must be transferred from the loan credit account");
+            throw new AccessDeniedException("Погашение кредита должно быть переведено с кредитного счета займа");
         }
         transferFromCreditAccountToService(creditAccountId, loan.getServiceAccountId(), amount, loan.getCurrency());
     }
