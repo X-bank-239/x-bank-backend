@@ -8,6 +8,7 @@ import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.bankAccount.BankAccountValidationService;
+import com.example.xbankbackend.services.savings.SavingsAccountValidationService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesValidationService;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class TransactionsService {
     private final TransactionValidationService transactionValidationService;
     private final BankAccountValidationService bankAccountValidationService;
     private final TransactionCategoriesValidationService categoriesValidationService;
+    private final SavingsAccountValidationService savingsAccountValidationService;
     private final BalanceOperationService balanceOperationService;
     private final FeeService feeService;
 
@@ -37,6 +39,10 @@ public class TransactionsService {
 
         bankAccountValidationService.validateBankAccountExists(receiverId);
         bankAccountValidationService.validateBankAccountActive(receiverId);
+
+        if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
+            savingsAccountValidationService.validateTopUpAllowed(receiverId);
+        }
 
         transactionValidationService.validateDepositStructure(tx);
         transactionValidationService.validateAmountPositive(tx.getAmount());
@@ -51,6 +57,10 @@ public class TransactionsService {
     }
 
     public TransactionResponse transfer(Transaction tx, UUID authenticatedUserId) {
+        return transfer(tx, authenticatedUserId, false);
+    }
+
+    public TransactionResponse transfer(Transaction tx, UUID authenticatedUserId, boolean skipSavingsRestrictions) {
         UUID receiverId = tx.getReceiverId();
         UUID senderId = tx.getSenderId();
 
@@ -59,6 +69,15 @@ public class TransactionsService {
 
         bankAccountValidationService.validateBankAccountActive(receiverId);
         bankAccountValidationService.validateBankAccountActive(senderId);
+
+        if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
+            savingsAccountValidationService.validateTopUpAllowed(receiverId);
+        }
+        if (!skipSavingsRestrictions) {
+            if (savingsAccountValidationService.validateSavingsAccountExistsSoft(senderId)) {
+                savingsAccountValidationService.validateWithdrawalAllowed(senderId);
+            }
+        }
 
         transactionValidationService.validateTransferStructure(tx);
         transactionValidationService.validateUserIsOwner(senderId, authenticatedUserId);
@@ -82,6 +101,10 @@ public class TransactionsService {
 
         bankAccountValidationService.validateBankAccountExists(senderId);
         bankAccountValidationService.validateBankAccountActive(senderId);
+
+        if (savingsAccountValidationService.validateSavingsAccountExistsSoft(senderId)) {
+            savingsAccountValidationService.validateWithdrawalAllowed(senderId);
+        }
 
         transactionValidationService.validatePaymentStructure(tx);
         transactionValidationService.validateUserIsOwner(senderId, authenticatedUserId);
