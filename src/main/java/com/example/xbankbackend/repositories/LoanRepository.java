@@ -1,7 +1,5 @@
 package com.example.xbankbackend.repositories;
 
-import com.example.xbankbackend.dtos.responses.LoanResponse;
-import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.Loan;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -14,8 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.xbankbackend.generated.Tables.*;
-import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
+import static com.example.xbankbackend.generated.Tables.LOANS;
 import static com.example.xbankbackend.generated.Tables.USERS;
 
 @AllArgsConstructor
@@ -28,7 +25,7 @@ public class LoanRepository {
                 .values(
                         loan.getLoanId(),
                         loan.getUserId(),
-                        loan.getCreditAccountId(),
+                        loan.getDebitAccountId(),
                         loan.getServiceAccountId(),
                         loan.getCurrency(),
                         loan.getPrincipalAmount(),
@@ -49,6 +46,7 @@ public class LoanRepository {
                 .where(LOANS.LOAN_ID.eq(loanId))
                 .fetchOneInto(Loan.class);
     }
+
     public List<Loan> getLoans(UUID userId) {
         return dsl.select()
                 .from(LOANS)
@@ -57,14 +55,38 @@ public class LoanRepository {
                 .fetch()
                 .into(Loan.class);
     }
-    public Optional<Loan> findActiveByCreditAccountIdAndUserId(UUID creditAccountId, UUID userId) {
+
+    public Optional<Loan> findActiveByLoanIdAndUserId(UUID loanId, UUID userId) {
         return dsl.selectFrom(LOANS)
-                .where(LOANS.CREDIT_ACCOUNT_ID.eq(creditAccountId))
+                .where(LOANS.LOAN_ID.eq(loanId))
+                .and(LOANS.USER_ID.eq(userId))
+                .and(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .fetchOptionalInto(Loan.class);
+    }
+
+    public Optional<Loan> findActiveByDebitAccountIdAndUserId(UUID accountId, UUID userId) {
+        return dsl.selectFrom(LOANS)
+                .where(LOANS.DEBIT_ACCOUNT_ID.eq(accountId))
                 .and(LOANS.USER_ID.eq(userId))
                 .and(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
                 .orderBy(LOANS.CREATED_AT.desc())
                 .limit(1)
                 .fetchOptionalInto(Loan.class);
+    }
+
+    public List<Loan> findDueActiveLoans(LocalDate date) {
+        return dsl.selectFrom(LOANS)
+                .where(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .and(LOANS.AUTOPAY_ENABLED.eq(true))
+                .and(LOANS.NEXT_PAYMENT_DATE.le(date))
+                .fetchInto(Loan.class);
+    }
+
+    public void setAutopayEnabled(UUID loanId, boolean enabled) {
+        dsl.update(LOANS)
+                .set(LOANS.AUTOPAY_ENABLED, enabled)
+                .where(LOANS.LOAN_ID.eq(loanId))
+                .execute();
     }
 
     public boolean exists(UUID loanId) {
