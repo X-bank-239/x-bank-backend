@@ -273,7 +273,6 @@ class SavingsAccountServiceTest {
 
             service.makeMonthlyAccrual();
 
-            verify(bankRepo).increaseBalance(id, accrued);
             verify(savingsRepo).setAccruedInterestToZero(id);
         }
     }

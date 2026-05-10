@@ -167,7 +167,7 @@ public class SavingsAccountService {
         transactionsService.transfer(tx, userId, true);
     }
 
-    private Transaction makeMonthlyInterestDeposit(UUID to, BigDecimal amount) {
+    private void makeMonthlyInterestDeposit(UUID to, BigDecimal amount) {
         Transaction tx = new Transaction();
         tx.setTransactionType(TransactionType.DEPOSIT);
         tx.setReceiverId(to);
