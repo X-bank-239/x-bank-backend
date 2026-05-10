@@ -9,9 +9,10 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
+@Schema(name = "CreateLoanRequest", description = "Создание кредита наличными: зачисление и погашение через дебетовый счёт.")
 public class CreateLoanRequest {
-    @NotNull(message = "creditAccountId cannot be null")
-    private UUID creditAccountId;
+    @NotNull(message = "debitAccountId cannot be null")
+    private UUID debitAccountId;
 
     @NotNull(message = "principalAmount cannot be null")
     @Positive(message = "principalAmount must be positive")
