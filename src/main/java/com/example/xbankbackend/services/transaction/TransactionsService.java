@@ -34,14 +34,20 @@ public class TransactionsService {
     private final BalanceOperationService balanceOperationService;
     private final FeeService feeService;
 
-    public TransactionResponse deposit(Transaction tx, UUID authenticatedUserId) {
+    public TransactionResponse deposit(Transaction tx) {
+        return deposit(tx, false);
+    }
+
+    public TransactionResponse deposit(Transaction tx, boolean skipSavingsRestrictions) {
         UUID receiverId = tx.getReceiverId();
 
         bankAccountValidationService.validateBankAccountExists(receiverId);
         bankAccountValidationService.validateBankAccountActive(receiverId);
 
-        if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
-            savingsAccountValidationService.validateTopUpAllowed(receiverId);
+        if (!skipSavingsRestrictions) {
+            if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
+                savingsAccountValidationService.validateTopUpAllowed(receiverId);
+            }
         }
 
         transactionValidationService.validateDepositStructure(tx);

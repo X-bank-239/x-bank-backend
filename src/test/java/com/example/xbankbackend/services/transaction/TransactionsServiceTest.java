@@ -68,7 +68,6 @@ class TransactionsServiceTest {
         @Test
         void shouldExecuteDeposit_WhenValidationsPass() {
             Transaction tx = buildValidDeposit();
-            UUID userId = UUID.randomUUID();
             UUID receiverId = tx.getReceiverId();
 
             doNothing().when(bankAccountValidationService).validateBankAccountExists(receiverId);
@@ -77,7 +76,7 @@ class TransactionsServiceTest {
             doNothing().when(transactionValidationService).validateAmountPositive(tx.getAmount());
             when(transactionMapper.transactionToResponse(any())).thenReturn(new TransactionResponse());
 
-            service.deposit(tx, userId);
+            service.deposit(tx);
 
             verify(transactionsRepository).addTransaction(tx);
             verify(balanceOperationService).increaseBalance(receiverId, tx.getAmount(), tx.getCurrency());

@@ -93,7 +93,7 @@ public class SavingsAccountService {
 
         BigDecimal amount = sourceBankaccount.getBalance().add(savingsAccount.getAccruedInterest());
         if (savingsAccount.getStatus().equals("ACTIVE")) {
-            BigDecimal penaltyAmount = sourceBankaccount.getBalance()
+            BigDecimal penaltyAmount = savingsAccount.getAccruedInterest()
                     .multiply(savingsAccount.getEarlyWithdrawalPenalty())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             amount = amount.subtract(penaltyAmount);
@@ -101,8 +101,7 @@ public class SavingsAccountService {
             log.info("Early closure penalty applied: {}", penaltyAmount);
         }
 
-        Transaction tx = makeClosingAccountTransfer(accountId, targetAccountId, amount);
-        transactionsService.transfer(tx, userId, true);
+        makeClosingAccountTransfer(accountId, targetAccountId, amount, userId);
 
         savingsAccount.setStatus("CLOSED");
         savingsAccountRepository.update(savingsAccount);
@@ -149,14 +148,14 @@ public class SavingsAccountService {
             BigDecimal accruedInterest = savings.getAccruedInterest();
             UUID accountId = baseAccount.getAccountId();
 
-            bankAccountRepository.increaseBalance(accountId, accruedInterest);
+            makeMonthlyInterestDeposit(accountId, accruedInterest);
             savingsAccountRepository.setAccruedInterestToZero(accountId);
 
             log.info("Made monthly accrual {} for account {}", accruedInterest, savings.getAccountId());
         }
     }
 
-    private Transaction makeClosingAccountTransfer(UUID from, UUID to, BigDecimal amount) {
+    private void makeClosingAccountTransfer(UUID from, UUID to, BigDecimal amount, UUID userId) {
         Transaction tx = new Transaction();
         tx.setTransactionType(TransactionType.TRANSFER);
         tx.setSenderId(from);
@@ -165,6 +164,17 @@ public class SavingsAccountService {
         tx.setCurrency(bankAccountRepository.getCurrency(from));
         tx.setComment("Перевод с накопительного счёта");
 
-        return tx;
+        transactionsService.transfer(tx, userId, true);
+    }
+
+    private Transaction makeMonthlyInterestDeposit(UUID to, BigDecimal amount) {
+        Transaction tx = new Transaction();
+        tx.setTransactionType(TransactionType.DEPOSIT);
+        tx.setReceiverId(to);
+        tx.setAmount(amount);
+        tx.setCurrency(bankAccountRepository.getCurrency(to));
+        tx.setComment("Ежемесячные проценты с накопительного счёта");
+
+        transactionsService.deposit(tx, true);
     }
 }
