@@ -11,6 +11,7 @@ import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.bankAccount.BankAccountValidationService;
+import com.example.xbankbackend.services.savings.SavingsAccountValidationService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesService;
 import com.example.xbankbackend.services.transactionCategories.TransactionCategoriesValidationService;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +58,8 @@ class TransactionsServiceTest {
     @Mock
     private FeeService feeService;
 
+    @Mock
+    private SavingsAccountValidationService savingsAccountValidationService;
 
     @InjectMocks
     private TransactionsService service;
@@ -68,7 +71,6 @@ class TransactionsServiceTest {
         @Test
         void shouldExecuteDeposit_WhenValidationsPass() {
             Transaction tx = buildValidDeposit();
-            UUID userId = UUID.randomUUID();
             UUID receiverId = tx.getReceiverId();
 
             doNothing().when(bankAccountValidationService).validateBankAccountExists(receiverId);
@@ -77,7 +79,7 @@ class TransactionsServiceTest {
             doNothing().when(transactionValidationService).validateAmountPositive(tx.getAmount());
             when(transactionMapper.transactionToResponse(any())).thenReturn(new TransactionResponse());
 
-            service.deposit(tx, userId);
+            service.deposit(tx);
 
             verify(transactionsRepository).addTransaction(tx);
             verify(balanceOperationService).increaseBalance(receiverId, tx.getAmount(), tx.getCurrency());

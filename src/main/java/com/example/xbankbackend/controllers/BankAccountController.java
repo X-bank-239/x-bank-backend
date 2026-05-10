@@ -47,6 +47,8 @@ public class BankAccountController {
         return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
     }
 
+    // TODO: сделать /list по типу счёта
+
     // ADMIN-only
 
     @GetMapping("/{accountId}")
