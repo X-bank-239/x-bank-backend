@@ -30,10 +30,9 @@ public class TransactionsController {
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing deposit: {}", transactionRequest);
-        UUID userId = SecurityUtil.getCurrentUserId();
 
         Transaction deposit = transactionMapper.requestToTransaction(transactionRequest);
-        TransactionResponse response = transactionsService.deposit(deposit, userId);
+        TransactionResponse response = transactionsService.deposit(deposit);
         return ResponseEntity.ok(response);
     }
 
