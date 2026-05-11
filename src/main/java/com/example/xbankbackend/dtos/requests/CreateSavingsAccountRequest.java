@@ -19,15 +19,14 @@ public class CreateSavingsAccountRequest {
     private UUID accountId;
 
     @NotNull
-    @DecimalMin("0.01")
-    private BigDecimal interestRate;
-
-    @NotNull
     @Future
     private LocalDate maturityDate;
 
-    private boolean allowWithdrawal = false;
-    private boolean allowTopup = false;
+    @NotNull
+    private boolean allowWithdrawal;
+
+    @NotNull
+    private boolean allowTopUp;
 
     @DecimalMin("0")
     private BigDecimal earlyWithdrawalPenalty = BigDecimal.valueOf(100);

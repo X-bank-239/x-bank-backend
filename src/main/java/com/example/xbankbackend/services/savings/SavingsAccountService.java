@@ -7,6 +7,7 @@ import com.example.xbankbackend.models.SavingsAccount;
 import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.SavingsAccountRepository;
+import com.example.xbankbackend.services.AppSettingsService;
 import com.example.xbankbackend.services.transaction.TransactionsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,6 +28,7 @@ public class SavingsAccountService {
     private SavingsAccountRepository savingsAccountRepository;
     private BankAccountRepository bankAccountRepository;
     private TransactionsService transactionsService;
+    private AppSettingsService appSettingsService;
 
     private final SavingsAccountValidationService savingsAccountValidationService;
 
@@ -43,9 +45,17 @@ public class SavingsAccountService {
             throw new IllegalArgumentException("Счёт должен быть типа SAVINGS");
         }
 
-        // TODO: сделать ставку в зависимости от возможности пополнения/снятия
+        BigDecimal interest = appSettingsService.getSavingsRate(savingsAccount.isAllowWithdrawal(), savingsAccount.isAllowTopUp());
+
+        savingsAccount.setInterestRate(interest);
+
+        // TODO: подтягивать penalty из настроек
 
         savingsAccountRepository.create(savingsAccount);
+    }
+
+    public BigDecimal getInterest(boolean allowWithdrawal, boolean allowTopUp) {
+        return appSettingsService.getSavingsRate(allowWithdrawal, allowTopUp);
     }
 
     public SavingsAccount get(UUID accountId) {

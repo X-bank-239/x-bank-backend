@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,15 @@ public class SavingsAccountController {
         savingsAccountService.create(account);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(account);
+    }
+
+    @GetMapping("/interest")
+    public ResponseEntity<BigDecimal> getInterest(@PathVariable boolean allowWithdrawal, @PathVariable boolean allowTopUp) {
+        log.info("Getting interest, allowWithdrawal {}, allowTopUp {}", allowWithdrawal, allowTopUp);
+
+        BigDecimal interest = savingsAccountService.getInterest(allowWithdrawal, allowTopUp);
+
+        return ResponseEntity.status(HttpStatus.OK).body(interest);
     }
 
     // CURRENT USER or ADMIN
