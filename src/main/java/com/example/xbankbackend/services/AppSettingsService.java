@@ -16,9 +16,9 @@ public class AppSettingsService {
 
     private static final String SAVINGS_RATE_FLEX           = "savings.rate.flexible";
     private static final String SAVINGS_RATE_FIXED          = "savings.rate.fixed";
-    private static final String SAVINGS_RATE_TOPUP_ONLY     = "savings.rate.fixed";
-    private static final String SAVINGS_RATE_WITHDRAW_ONLY  = "savings.rate.fixed";
-    private static final String TRANSACTIONS_BASE_FEE       = "fee.transfer.base";
+    private static final String SAVINGS_RATE_TOPUP_ONLY     = "savings.rate.topup-only";
+    private static final String SAVINGS_RATE_WITHDRAW_ONLY  = "savings.rate.withdrawal-only";
+    private static final String TRANSACTIONS_BASE_FEE       = "fee.transfer.base-fee";
 
     private AppSettingsRepository appSettingsRepository;
     private AppSettingMapper appSettingMapper;
@@ -55,6 +55,16 @@ public class AppSettingsService {
     public AppSetting update(String key, UpdateAppSettingRequest request) {
         validateKeyExists(key);
 
+        BigDecimal newValue;
+        try {
+            newValue = new BigDecimal(request.getSettingValue());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Некорректное числовое значение");
+        }
+        if (newValue.compareTo(BigDecimal.ZERO) <= 0 || newValue.compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Значение должно быть от 0.01 до 100");
+        }
+
         AppSetting setting = appSettingsRepository.getByKey(key);
 
         appSettingMapper.updateEntityFromRequest(request, setting);
@@ -64,6 +74,8 @@ public class AppSettingsService {
     }
 
     private BigDecimal getDecimalValue(String key) {
+        validateKeyExists(key);
+
         String value = appSettingsRepository.getValueByKey(key);
 
         return new BigDecimal(value);
