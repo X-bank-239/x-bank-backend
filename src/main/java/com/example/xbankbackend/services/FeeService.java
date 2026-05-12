@@ -1,18 +1,20 @@
 package com.example.xbankbackend.services;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+@AllArgsConstructor
 @Service
 public class FeeService {
 
-    @Value("${application.base-fee:0.015}")
-    private Float baseFee;
+    private AppSettingsService settingsService;
 
     public BigDecimal applyBaseFee(BigDecimal amount) {
-        return amount.multiply(BigDecimal.ONE.add(BigDecimal.valueOf(baseFee)));
+        BigDecimal baseFee = settingsService.getTransactionsBaseFee();
+
+        return amount.multiply(BigDecimal.ONE.add(baseFee));
     }
 
     public BigDecimal applyFee(BigDecimal amount, Float fee) {
