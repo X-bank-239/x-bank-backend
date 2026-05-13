@@ -79,7 +79,6 @@ public class SavingsAccountService {
 
         savingsAccount.setMaturityDate(newMaturityDate);
         savingsAccount.setLastInterestCalculation(LocalDate.now());
-        savingsAccount.setAccruedInterest(BigDecimal.ZERO);
 
         savingsAccountRepository.update(savingsAccount);
 
