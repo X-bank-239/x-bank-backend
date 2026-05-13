@@ -8,7 +8,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@Schema(name = "LoanRepaymentRequest", description = "Тело запроса погашения: сумма платежа. UUID кредитного счёта передаётся в пути URL (см. POST /loans/credit-accounts/{creditAccountId}/repay/...).")
+@Schema(name = "LoanRepaymentRequest", description = "Тело запроса погашения.")
 public class LoanRepaymentRequest {
     @NotNull(message = "amount cannot be null")
     @Positive(message = "amount must be positive")

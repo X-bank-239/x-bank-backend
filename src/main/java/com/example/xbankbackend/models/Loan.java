@@ -4,7 +4,6 @@ import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.LoanStatus;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,8 +22,9 @@ import java.util.UUID;
 public class Loan {
     private UUID loanId;
     private UUID userId;
-    private UUID creditAccountId;
+    private UUID debitAccountId;
     private UUID serviceAccountId;
+    private Boolean autopayEnabled;
     private CurrencyType currency;
     private BigDecimal principalAmount;
     private BigDecimal annualInterestRate;

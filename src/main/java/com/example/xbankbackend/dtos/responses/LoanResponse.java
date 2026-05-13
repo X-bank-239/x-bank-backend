@@ -10,12 +10,16 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
+@Schema(name = "LoanResponse", description = "Кредит наличными.")
 public class LoanResponse {
     private UUID loanId;
 
-    private UUID creditAccountId;
+    private UUID debitAccountId;
 
     private UUID serviceAccountId;
+
+    @Schema(description = "Включено ли автосписание ежемесячного платежа.")
+    private Boolean autopayEnabled;
 
     private CurrencyType currency;
 
