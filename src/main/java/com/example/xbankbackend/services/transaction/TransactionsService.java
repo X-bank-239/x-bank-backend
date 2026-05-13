@@ -70,6 +70,10 @@ public class TransactionsService {
         UUID receiverId = tx.getReceiverId();
         UUID senderId = tx.getSenderId();
 
+        if (receiverId == senderId) {
+            throw new IllegalArgumentException("Нельзя перевести деньги самому себе");
+        }
+
         bankAccountValidationService.validateBankAccountExists(receiverId);
         bankAccountValidationService.validateBankAccountExists(senderId);
 
@@ -149,6 +153,10 @@ public class TransactionsService {
 
         Transaction transaction = transactionsRepository.get(transactionId);
         UUID senderId = transaction.getSenderId(), receiverId = transaction.getReceiverId();
+
+        if (transaction.getStatus() == TransactionStatus.CANCELLED) {
+            throw new IllegalArgumentException("Транзакция уже отменена");
+        }
 
         if (senderId != null) {
             balanceOperationService.increaseBalance(senderId, transaction.getAmount(), transaction.getCurrency());

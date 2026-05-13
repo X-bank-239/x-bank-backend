@@ -32,7 +32,7 @@ public class BankAccountValidationService {
 
     public void validateSufficientFundsWithFee(UUID accountId, BigDecimal amount) {
         BigDecimal balance = bankAccountRepository.getBalance(accountId);
-        if (feeService.applyBaseFee(amount).compareTo(balance) >= 0) {
+        if (feeService.applyBaseFee(amount).compareTo(balance) > 0) {
             throw new InsufficientFundsException("Баланс отправителя должен быть не меньше суммы транзакции");
         }
     }

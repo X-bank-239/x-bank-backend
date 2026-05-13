@@ -22,9 +22,10 @@ public class EmailSender {
 
     private JavaMailSender mailSender;
     private VerificationCodesRepository verificationCodesRepository;
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     public TempAuthState sendVerificationCode(UUID userId, String email) {
-        String code = String.format("%06d", new SecureRandom().nextInt(999999));
+        String code = String.format("%06d", secureRandom.nextInt(999999));
         String hashedCode = BCrypt.hashpw(code, BCrypt.gensalt());
         UUID stateId = verificationCodesRepository.create(userId, hashedCode);
 

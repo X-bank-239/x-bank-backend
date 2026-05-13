@@ -6,6 +6,7 @@ import com.example.xbankbackend.models.BankAccount;
 import com.example.xbankbackend.models.SavingsAccount;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.SavingsAccountRepository;
+import com.example.xbankbackend.services.AppSettingsService;
 import com.example.xbankbackend.services.transaction.TransactionsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,6 +41,9 @@ class SavingsAccountServiceTest {
 
     @Mock
     private SavingsAccountValidationService validationService;
+
+    @Mock
+    private AppSettingsService appSettingsService;
 
     @InjectMocks
     private SavingsAccountService service;
@@ -113,7 +117,7 @@ class SavingsAccountServiceTest {
             service.prolong(id, newDate);
 
             assertThat(savings.getMaturityDate()).isEqualTo(newDate);
-            assertThat(savings.getAccruedInterest()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(savings.getAccruedInterest()).isEqualByComparingTo(BigDecimal.valueOf(100));
             verify(savingsRepo).update(savings);
         }
     }
