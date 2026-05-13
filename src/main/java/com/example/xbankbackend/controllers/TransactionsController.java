@@ -27,7 +27,9 @@ public class TransactionsController {
 
     private TransactionsService transactionsService;
     private TransactionMapper transactionMapper;
+
     @PostMapping("/deposit")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody CreateTransactionRequest transactionRequest) {
         log.info("Processing deposit: {}", transactionRequest);
 
