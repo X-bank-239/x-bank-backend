@@ -70,6 +70,10 @@ public class TransactionsService {
         UUID receiverId = tx.getReceiverId();
         UUID senderId = tx.getSenderId();
 
+        if (receiverId == senderId) {
+            throw new IllegalArgumentException("Нельзя перевести деньги самому себе");
+        }
+
         bankAccountValidationService.validateBankAccountExists(receiverId);
         bankAccountValidationService.validateBankAccountExists(senderId);
 
