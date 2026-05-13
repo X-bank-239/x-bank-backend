@@ -2,6 +2,8 @@ package com.example.xbankbackend.repositories;
 
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.BankAccountType;
+import com.example.xbankbackend.mappers.AccountTypeMapper;
+import com.example.xbankbackend.mappers.CurrencyTypeMapper;
 import com.example.xbankbackend.models.BankAccount;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -18,10 +20,17 @@ import static com.example.xbankbackend.generated.Tables.BANK_ACCOUNTS;
 public class BankAccountRepository {
 
     private final DSLContext dsl;
+    private CurrencyTypeMapper currencyTypeMapper;
+    private AccountTypeMapper accountTypeMapper;
 
     public void create(BankAccount bankAccount) {
         dsl.insertInto(BANK_ACCOUNTS)
-                .values(bankAccount.getAccountId(), bankAccount.getUserId(), bankAccount.getBalance(), bankAccount.getCurrency(), bankAccount.getAccountType(), bankAccount.getActive())
+                .set(BANK_ACCOUNTS.ACCOUNT_ID, bankAccount.getAccountId())
+                .set(BANK_ACCOUNTS.USER_ID, bankAccount.getUserId())
+                .set(BANK_ACCOUNTS.BALANCE, bankAccount.getBalance())
+                .set(BANK_ACCOUNTS.CURRENCY, currencyTypeMapper.toGenerated(bankAccount.getCurrency()))
+                .set(BANK_ACCOUNTS.ACTIVE, bankAccount.getActive())
+                .set(BANK_ACCOUNTS.ACCOUNT_TYPE, accountTypeMapper.toGenerated(bankAccount.getAccountType()))
                 .execute();
     }
 
