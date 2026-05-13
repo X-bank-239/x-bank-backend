@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.example.xbankbackend.generated.enums.CurrencyType;
+import com.example.xbankbackend.generated.enums.LoanStatus;
+
 import static com.example.xbankbackend.generated.Tables.LOANS;
 import static com.example.xbankbackend.generated.Tables.USERS;
 
@@ -22,22 +25,20 @@ public class LoanRepository {
 
     public void create(Loan loan) {
         dsl.insertInto(LOANS)
-                .values(
-                        loan.getLoanId(),
-                        loan.getUserId(),
-                        loan.getDebitAccountId(),
-                        loan.getServiceAccountId(),
-                        loan.getCurrency(),
-                        loan.getPrincipalAmount(),
-                        loan.getAnnualInterestRate(),
-                        loan.getTermMonths(),
-                        loan.getMonthlyPayment(),
-                        loan.getOutstandingPrincipal(),
-                        loan.getNextPaymentDate(),
-                        loan.getStatus(),
-                        loan.getCreatedAt(),
-                        loan.getClosedAt()
-                )
+                .set(LOANS.LOAN_ID, loan.getLoanId())
+                .set(LOANS.CREATED_AT, loan.getCreatedAt())
+                .set(LOANS.DEBIT_ACCOUNT_ID,loan.getDebitAccountId())
+                .set(LOANS.USER_ID, loan.getUserId())
+                .set(LOANS.CURRENCY, CurrencyType.valueOf(loan.getCurrency().name()))
+                .set(LOANS.SERVICE_ACCOUNT_ID, loan.getServiceAccountId())
+                .set(LOANS.PRINCIPAL_AMOUNT, loan.getPrincipalAmount())
+                .set(LOANS.ANNUAL_INTEREST_RATE, loan.getAnnualInterestRate())
+                .set(LOANS.TERM_MONTHS, loan.getTermMonths())
+                .set(LOANS.MONTHLY_PAYMENT, loan.getMonthlyPayment())
+                .set(LOANS.OUTSTANDING_PRINCIPAL, loan.getOutstandingPrincipal())
+                .set(LOANS.NEXT_PAYMENT_DATE, loan.getNextPaymentDate())
+                .set(LOANS.STATUS, LoanStatus.valueOf(loan.getStatus().name()))
+                .set(LOANS.CLOSED_AT,  loan.getClosedAt())
                 .execute();
     }
 
@@ -60,7 +61,7 @@ public class LoanRepository {
         return dsl.selectFrom(LOANS)
                 .where(LOANS.LOAN_ID.eq(loanId))
                 .and(LOANS.USER_ID.eq(userId))
-                .and(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .and(LOANS.STATUS.eq(LoanStatus.ACTIVE))
                 .fetchOptionalInto(Loan.class);
     }
 
@@ -68,7 +69,7 @@ public class LoanRepository {
         return dsl.selectFrom(LOANS)
                 .where(LOANS.DEBIT_ACCOUNT_ID.eq(accountId))
                 .and(LOANS.USER_ID.eq(userId))
-                .and(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .and(LOANS.STATUS.eq(LoanStatus.ACTIVE))
                 .orderBy(LOANS.CREATED_AT.desc())
                 .limit(1)
                 .fetchOptionalInto(Loan.class);
@@ -76,7 +77,7 @@ public class LoanRepository {
 
     public List<Loan> findDueActiveLoans(LocalDate date) {
         return dsl.selectFrom(LOANS)
-                .where(LOANS.STATUS.eq(com.example.xbankbackend.generated.enums.LoanStatus.ACTIVE))
+                .where(LOANS.STATUS.eq(LoanStatus.ACTIVE))
                 .and(LOANS.AUTOPAY_ENABLED.eq(true))
                 .and(LOANS.NEXT_PAYMENT_DATE.le(date))
                 .fetchInto(Loan.class);
@@ -107,7 +108,7 @@ public class LoanRepository {
 
     public void close(UUID loanId, OffsetDateTime closedAt) {
         dsl.update(LOANS)
-                .set(LOANS.STATUS, com.example.xbankbackend.generated.enums.LoanStatus.CLOSED)
+                .set(LOANS.STATUS, LoanStatus.CLOSED)
                 .set(LOANS.OUTSTANDING_PRINCIPAL, BigDecimal.ZERO)
                 .set(LOANS.CLOSED_AT, closedAt)
                 .where(LOANS.LOAN_ID.eq(loanId))
