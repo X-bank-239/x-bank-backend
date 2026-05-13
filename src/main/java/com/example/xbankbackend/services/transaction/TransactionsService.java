@@ -150,6 +150,10 @@ public class TransactionsService {
         Transaction transaction = transactionsRepository.get(transactionId);
         UUID senderId = transaction.getSenderId(), receiverId = transaction.getReceiverId();
 
+        if (transaction.getStatus() == TransactionStatus.CANCELLED) {
+            throw new IllegalArgumentException("Транзакция уже отменена");
+        }
+
         if (senderId != null) {
             balanceOperationService.increaseBalance(senderId, transaction.getAmount(), transaction.getCurrency());
         }
