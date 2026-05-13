@@ -1,5 +1,7 @@
 package com.example.xbankbackend.repositories;
 
+import com.example.xbankbackend.mappers.CurrencyTypeMapper;
+import com.example.xbankbackend.mappers.LoanStatusMapper;
 import com.example.xbankbackend.models.Loan;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
@@ -22,6 +24,9 @@ import static com.example.xbankbackend.generated.Tables.USERS;
 @Repository
 public class LoanRepository {
     private final DSLContext dsl;
+    private final CurrencyTypeMapper currencyTypeMapper;
+    private final LoanStatusMapper loanStatusMapper;
+
 
     public void create(Loan loan) {
         dsl.insertInto(LOANS)
@@ -29,7 +34,7 @@ public class LoanRepository {
                 .set(LOANS.CREATED_AT, loan.getCreatedAt())
                 .set(LOANS.DEBIT_ACCOUNT_ID,loan.getDebitAccountId())
                 .set(LOANS.USER_ID, loan.getUserId())
-                .set(LOANS.CURRENCY, CurrencyType.valueOf(loan.getCurrency().name()))
+                .set(LOANS.CURRENCY, currencyTypeMapper.toGenerated(loan.getCurrency()))
                 .set(LOANS.SERVICE_ACCOUNT_ID, loan.getServiceAccountId())
                 .set(LOANS.PRINCIPAL_AMOUNT, loan.getPrincipalAmount())
                 .set(LOANS.ANNUAL_INTEREST_RATE, loan.getAnnualInterestRate())
@@ -37,7 +42,7 @@ public class LoanRepository {
                 .set(LOANS.MONTHLY_PAYMENT, loan.getMonthlyPayment())
                 .set(LOANS.OUTSTANDING_PRINCIPAL, loan.getOutstandingPrincipal())
                 .set(LOANS.NEXT_PAYMENT_DATE, loan.getNextPaymentDate())
-                .set(LOANS.STATUS, LoanStatus.valueOf(loan.getStatus().name()))
+                .set(LOANS.STATUS, loanStatusMapper.toGenerated(loan.getStatus()))
                 .set(LOANS.CLOSED_AT,  loan.getClosedAt())
                 .execute();
     }
