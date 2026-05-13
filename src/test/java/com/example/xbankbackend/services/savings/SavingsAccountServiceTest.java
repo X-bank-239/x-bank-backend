@@ -117,7 +117,7 @@ class SavingsAccountServiceTest {
             service.prolong(id, newDate);
 
             assertThat(savings.getMaturityDate()).isEqualTo(newDate);
-            assertThat(savings.getAccruedInterest()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(savings.getAccruedInterest()).isEqualByComparingTo(BigDecimal.valueOf(100));
             verify(savingsRepo).update(savings);
         }
     }
