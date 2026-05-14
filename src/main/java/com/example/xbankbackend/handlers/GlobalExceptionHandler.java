@@ -109,13 +109,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBankAccountOwnership(UserIsNotABankAccountOwner ex) {
         log.warn(ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(CurrencyParsingException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(CurrencyParsingException ex) {
+    public ResponseEntity<ErrorResponse> handleCurrencyParsingException(CurrencyParsingException ex) {
         log.warn(ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "PARSING_ERROR", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "PARSING_ERROR", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 

@@ -36,6 +36,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/actuator/health",
                                 "/actuator/info").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/currency-rates/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

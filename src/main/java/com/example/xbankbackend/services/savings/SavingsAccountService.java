@@ -37,7 +37,7 @@ public class SavingsAccountService {
     public void create(SavingsAccount savingsAccount) {
         UUID baseAccountId = savingsAccount.getAccountId();
 
-        savingsAccountValidationService.validateSavingsAccountExists(baseAccountId);
+        savingsAccountValidationService.validateSavingsAccountUnique(baseAccountId);
 
         BankAccount baseAccount = bankAccountRepository.get(baseAccountId);
 
