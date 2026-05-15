@@ -21,6 +21,12 @@ public class SavingsAccountValidationService {
         }
     }
 
+    public void validateSavingsAccountUnique(UUID accountId) {
+        if (savingsAccountRepository.exists(accountId)) {
+            throw new BankAccountNotFoundException("Сберегательный счёт с UUID " + accountId + " уже существует");
+        }
+    }
+
     public boolean validateSavingsAccountExistsSoft(UUID accountId) {
         return savingsAccountRepository.exists(accountId);
     }

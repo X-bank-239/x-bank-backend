@@ -2,7 +2,6 @@ package com.example.xbankbackend.services.currencyRate;
 
 import com.example.xbankbackend.dtos.requests.UpdateCurrencyRateRequest;
 import com.example.xbankbackend.enums.CurrencyType;
-import com.example.xbankbackend.exceptions.RateNotFoundException;
 import com.example.xbankbackend.mappers.CurrencyMapper;
 import com.example.xbankbackend.models.CurrencyRate;
 import com.example.xbankbackend.repositories.CurrencyRateRepository;
@@ -16,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -99,7 +99,13 @@ public class CurrencyRateService {
     }
 
     public List<CurrencyRate> getLatestRates() {
-        return currencyRateRepository.findByDateOrderByCurrencyAsc(LocalDate.now());
+        List<CurrencyRate> rates = new ArrayList<>();
+
+        for (CurrencyType currency : CurrencyType.values()) {
+            rates.add(getLatestRateByCurrency(currency));
+        }
+
+        return rates;
     }
 
     public CurrencyRate getLatestRateByCurrency(CurrencyType currency) {

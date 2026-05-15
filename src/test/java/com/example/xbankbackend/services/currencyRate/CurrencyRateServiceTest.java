@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -278,16 +279,19 @@ class CurrencyRateServiceTest {
     class GetLatestRatesTests {
 
         @Test
-        void shouldReturnRatesForToday() {
-            LocalDate today = LocalDate.now();
-            List<CurrencyRate> expected = List.of(new CurrencyRate());
+        void shouldReturnLatestRates() {
+            List<CurrencyRate> expected = new ArrayList<>();
+            int count = CurrencyType.values().length;
+            for (int i = 0; i < count; i++) {
+                expected.add(new CurrencyRate());
+            }
 
-            when(currencyRateRepository.findByDateOrderByCurrencyAsc(today)).thenReturn(expected);
+            when(service.getLatestRateByCurrency(any())).thenReturn(new CurrencyRate());
 
             List<CurrencyRate> result = service.getLatestRates();
 
             assertThat(result).containsExactlyElementsOf(expected);
-            verify(currencyRateRepository).findByDateOrderByCurrencyAsc(today);
+            verify(currencyRateRepository, times(count)).findLatestByCurrency(any());
         }
     }
 

@@ -49,21 +49,21 @@ public class UserValidationService {
 
     public void validateUserExists(UUID userId) {
         if (!userRepository.exists(userId)) {
-            throw new UserNotFoundException("Пользователь с UUID " + userId + " уже существует");
+            throw new UserNotFoundException("Пользователя с UUID " + userId + " не существует");
         }
     }
 
     public void validateUserExistsByEmail(String email) {
         validateEmail(email);
         if (!userRepository.existsByEmail(email)) {
-            throw new UserNotFoundException("Пользователь с email " + email + " уже существует");
+            throw new UserNotFoundException("Пользователя с email " + email + " не существует");
         }
     }
 
     public void validateEmailIsUnique(String email) {
         validateEmail(email);
         if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException("Пользователь с email " + email + " не существует");
+            throw new UserAlreadyExistsException("Пользователь с email " + email + " уже существует");
         }
     }
 }

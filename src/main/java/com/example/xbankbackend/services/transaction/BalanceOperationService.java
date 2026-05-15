@@ -43,7 +43,7 @@ public class BalanceOperationService {
 
         BigDecimal convertedAmount = currencyRateService.convert(txCurrency, accountCurrency, amount);
         BigDecimal amountWithFee = feeService.applyBaseFee(convertedAmount);
-        BigDecimal fee = amountWithFee.subtract(amount);
+        BigDecimal fee = amountWithFee.subtract(convertedAmount);
 
         increaseBalance(serviceAccountId, fee, accountCurrency);
         bankAccountRepository.decreaseBalance(accountId, amountWithFee);
