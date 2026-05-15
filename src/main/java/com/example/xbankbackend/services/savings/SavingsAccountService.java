@@ -8,7 +8,9 @@ import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.SavingsAccountRepository;
 import com.example.xbankbackend.services.AppSettingsService;
+import com.example.xbankbackend.services.bankAccount.BankAccountService;
 import com.example.xbankbackend.services.transaction.TransactionsService;
+import com.example.xbankbackend.services.user.UserValidationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +34,7 @@ public class SavingsAccountService {
     private AppSettingsService appSettingsService;
 
     private final SavingsAccountValidationService savingsAccountValidationService;
+    private final UserValidationService userValidationService;
 
     private static final int DAYS_IN_YEAR = 365;
 
@@ -62,6 +66,22 @@ public class SavingsAccountService {
         savingsAccountValidationService.validateSavingsAccountExists(accountId);
 
         return savingsAccountRepository.get(accountId);
+    }
+
+    public List<SavingsAccount> getByUserId(UUID userId) {
+        userValidationService.validateUserExists(userId);
+
+        List<SavingsAccount> savingsAccounts = new ArrayList<>();
+
+        for (BankAccount account : bankAccountRepository.getBankAccounts(userId)) {
+            UUID accountId = account.getAccountId();
+
+            if (savingsAccountRepository.exists(accountId)) {
+                savingsAccounts.add(savingsAccountRepository.get(accountId));
+            }
+        }
+
+        return savingsAccounts;
     }
 
     public List<SavingsAccount> getAllActive() {

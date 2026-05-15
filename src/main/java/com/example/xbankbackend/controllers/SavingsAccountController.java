@@ -48,6 +48,16 @@ public class SavingsAccountController {
         return ResponseEntity.status(HttpStatus.OK).body(interest);
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<List<SavingsAccount>> getCurrentUserSavingsAccounts(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        log.info("Getting savings accounts for user {}", userId);
+
+        List<SavingsAccount> accounts = savingsAccountService.getByUserId(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(accounts);
+    }
+
     // CURRENT USER or ADMIN
 
     @GetMapping("/get/{accountId}")
@@ -82,7 +92,7 @@ public class SavingsAccountController {
 
     // ADMIN-only
 
-    @GetMapping
+    @GetMapping("/list/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SavingsAccount>> getAllSavingsAccounts() {
         log.info("[ADMIN] Getting all active savings accounts");
