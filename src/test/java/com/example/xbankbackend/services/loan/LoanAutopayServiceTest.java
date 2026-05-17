@@ -25,9 +25,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoanAutopayServiceTest {
@@ -46,13 +44,15 @@ class LoanAutopayServiceTest {
     private EmailSender emailSender;
     @Mock
     private LoanValidationService loanValidationService;
+    @Mock
+    private LoanAutopayProcessorService loanAutopayProcessorService;
 
     @InjectMocks
     private LoanAutopayService loanAutopayService;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(loanAutopayService, "repaymentCalculationService", new LoanRepaymentCalculationService());
+//        ReflectionTestUtils.setField(loanAutopayService, "repaymentCalculationService", new LoanRepaymentCalculationService());
     }
 
     @Test
@@ -78,19 +78,10 @@ class LoanAutopayServiceTest {
                 .build();
 
         when(loanRepository.findDueActiveLoans(paymentDate)).thenReturn(List.of(loan));
-        User user = new User();
-        user.setEmail("user@test.com");
-        when(userRepository.getUser(userId)).thenReturn(user);
+
         loanAutopayService.processDueLoans(paymentDate);
 
-        verify(loanValidationService).validateAutopayHasEnoughFunds(senderId, new BigDecimal("1000.0000"));
-        verify(transactionsRepository).addTransaction(any());
-        verify(bankAccountRepository).decreaseBalance(senderId, new BigDecimal("1000.0000"));
-        verify(bankAccountRepository).increaseBalance(serviceId, new BigDecimal("1000.0000"));
-        verify(loanRepository).updateRepaymentState(eq(loanId), eq(new BigDecimal("9100.0000")), eq(paymentDate.plusMonths(1)));
-        verify(loanRepository, never()).close(eq(loanId), any(OffsetDateTime.class));
-        verify(emailSender).sendLoanRepaymentReceipt(eq("user@test.com"), eq(loanId), eq(new BigDecimal("1000.0000")),
-                eq(new BigDecimal("9100.0000")), eq(paymentDate.plusMonths(1)), eq(false));
+        verify(loanAutopayProcessorService, times(1)).processSingleLoan(loan);
     }
 
     @Test
@@ -116,15 +107,9 @@ class LoanAutopayServiceTest {
                 .build();
 
         when(loanRepository.findDueActiveLoans(paymentDate)).thenReturn(List.of(loan));
-        User user = new User();
-        user.setEmail("user@test.com");
-        when(userRepository.getUser(userId)).thenReturn(user);
+
         loanAutopayService.processDueLoans(paymentDate);
 
-        verify(loanValidationService).validateAutopayHasEnoughFunds(senderId, new BigDecimal("1000.0000"));
-        verify(loanRepository).close(eq(loanId), any(OffsetDateTime.class));
-        verify(loanRepository, never()).updateRepaymentState(eq(loanId), any(), any());
-        verify(emailSender).sendLoanRepaymentReceipt(eq("user@test.com"), eq(loanId), eq(new BigDecimal("1000.0000")),
-                eq(new BigDecimal("0.0000")), eq(null), eq(true));
+        verify(loanAutopayProcessorService, times(1)).processSingleLoan(loan);
     }
 }
