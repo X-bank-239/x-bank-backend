@@ -80,10 +80,10 @@ public class TransactionsService {
         bankAccountValidationService.validateBankAccountActive(receiverId);
         bankAccountValidationService.validateBankAccountActive(senderId);
 
-        if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
-            savingsAccountValidationService.validateTopUpAllowed(receiverId);
-        }
         if (!skipSavingsRestrictions) {
+            if (savingsAccountValidationService.validateSavingsAccountExistsSoft(receiverId)) {
+                savingsAccountValidationService.validateTopUpAllowed(receiverId);
+            }
             if (savingsAccountValidationService.validateSavingsAccountExistsSoft(senderId)) {
                 savingsAccountValidationService.validateWithdrawalAllowed(senderId);
             }

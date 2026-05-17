@@ -60,7 +60,7 @@ class SavingsAccountServiceTest {
             BankAccount base = new BankAccount();
             base.setAccountType(BankAccountType.DEBIT);
 
-            doNothing().when(validationService).validateSavingsAccountExists(id);
+            doNothing().when(validationService).validateSavingsAccountUnique(id);
             when(bankRepo.get(id)).thenReturn(base);
 
             assertThatThrownBy(() -> service.create(savings))
@@ -78,7 +78,7 @@ class SavingsAccountServiceTest {
             BankAccount base = new BankAccount();
             base.setAccountType(BankAccountType.SAVINGS);
 
-            doNothing().when(validationService).validateSavingsAccountExists(id);
+            doNothing().when(validationService).validateSavingsAccountUnique(id);
             when(bankRepo.get(id)).thenReturn(base);
 
             service.create(savings);

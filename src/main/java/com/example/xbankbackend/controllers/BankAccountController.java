@@ -63,12 +63,12 @@ public class BankAccountController {
 
     @GetMapping("/list/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BankAccountResponse> getAccountsByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<List<BankAccountResponse>> getAccountsByUserId(@PathVariable UUID userId) {
         log.info("[ADMIN] Getting account with for user {}", userId);
 
-        BankAccountResponse bankAccount = bankAccountService.get(userId);
+        List<BankAccountResponse> bankAccounts = bankAccountService.getAccountsByUser(userId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(bankAccount);
+        return ResponseEntity.status(HttpStatus.OK).body(bankAccounts);
     }
 
     @DeleteMapping("/{accountId}")
