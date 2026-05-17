@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -187,5 +188,14 @@ public class LoanController {
 
         List<LoanResponse> loans = loanService.getLoansByUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body(loans);
+    }
+
+    @GetMapping("/rate")
+    public ResponseEntity<BigDecimal> getRate() {
+        log.info("Getting rate");
+
+        BigDecimal interest = loanService.getRate();
+
+        return ResponseEntity.status(HttpStatus.OK).body(interest);
     }
 }
