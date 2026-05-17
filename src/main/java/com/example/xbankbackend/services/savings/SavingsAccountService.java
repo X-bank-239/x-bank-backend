@@ -52,6 +52,7 @@ public class SavingsAccountService {
         BigDecimal interest = appSettingsService.getSavingsRate(savingsAccount.isAllowWithdrawal(), savingsAccount.isAllowTopUp());
 
         savingsAccount.setInterestRate(interest);
+        savingsAccount.setLastInterestCalculation(LocalDate.now());
 
         // TODO: подтягивать penalty из настроек
 
