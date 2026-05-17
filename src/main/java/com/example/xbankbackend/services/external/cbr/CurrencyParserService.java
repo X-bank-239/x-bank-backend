@@ -36,7 +36,7 @@ public class CurrencyParserService {
         for (Element val : valuteElements) {
             try {
                 String currencyCode = val.selectFirst("VchCode").text().trim();
-                BigDecimal rate = BigDecimal.valueOf(Float.parseFloat(val.selectFirst("VunitRate").text()));
+                BigDecimal rate = new BigDecimal(val.selectFirst("VunitRate").text());
                 if (isCurrencySupported(currencyCode)) {
                     rates.put(CurrencyType.valueOf(currencyCode), rate);
                 }
@@ -48,7 +48,7 @@ public class CurrencyParserService {
         return rates;
     }
 
-    private boolean isCurrencySupported(String currencyCode) {
+    public boolean isCurrencySupported(String currencyCode) {
         try {
             CurrencyType.valueOf(currencyCode);
             return true;
