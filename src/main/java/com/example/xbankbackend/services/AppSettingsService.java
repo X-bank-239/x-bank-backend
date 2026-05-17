@@ -19,8 +19,7 @@ public class AppSettingsService {
     private static final String SAVINGS_RATE_TOPUP_ONLY     = "savings.rate.topup-only";
     private static final String SAVINGS_RATE_WITHDRAW_ONLY  = "savings.rate.withdrawal-only";
     private static final String TRANSACTIONS_BASE_FEE       = "transfer.base-fee";
-    private static final String LOAN_ANNUAL_RATE            = "loan.loan-annual-rate";
-
+    private static final String LOAN_ANNUAL_RATE            = "loan.loan_annual_rate";
     private AppSettingsRepository appSettingsRepository;
     private AppSettingMapper appSettingMapper;
 
