@@ -11,6 +11,7 @@ import com.example.xbankbackend.repositories.LoanRepository;
 import com.example.xbankbackend.repositories.TransactionsRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import com.example.xbankbackend.services.external.notification.EmailSender;
+import com.example.xbankbackend.services.AppSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,13 +35,14 @@ public class LoanAutopayProcessorService {
     private final TransactionsRepository transactionsRepository;
     private final UserRepository userRepository;
     private final EmailSender emailSender;
+    private final AppSettingsService appSettingsService;
 
-    @Value("${application.loanAnnualRate}")
-    private BigDecimal annualRate;
+
 
     public void processSingleLoan(Loan loan) {
         UUID senderId = resolveRepaymentSender(loan);
         BigDecimal paymentAmount = repaymentCalculationService.scaleMoney(loan.getMonthlyPayment());
+        BigDecimal annualRate = appSettingsService.getLoanAnnualRate();
         BigDecimal repaymentRate = loan.getAnnualInterestRate() != null
                 ? loan.getAnnualInterestRate()
                 : annualRate;

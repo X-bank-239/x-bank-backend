@@ -15,6 +15,7 @@ import com.example.xbankbackend.models.Transaction;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.LoanRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.services.AppSettingsService;
 import com.example.xbankbackend.services.external.notification.EmailSender;
 import com.example.xbankbackend.services.transaction.TransactionsService;
 import com.example.xbankbackend.services.user.UserValidationService;
@@ -43,10 +44,9 @@ public class LoanService {
     private final UserValidationService userValidationService;
     private final UserRepository userRepository;
     private final EmailSender emailSender;
+    private final AppSettingsService appSettingsService;
     @Value("${application.serviceAccountId}")
     private UUID serviceAccountId;
-    @Value("${application.loanAnnualRate}")
-    private BigDecimal annualRate;
     private final LoanMapper mapper;
 
     public LoanResponse createLoan(CreateLoanRequest request, UUID authenticatedUserId) {
@@ -55,7 +55,8 @@ public class LoanService {
         loanValidationService.validateBankAccountExists(serviceAccountId);
 
         CurrencyType loanCurrency = loanValidationService.validateCashLoanDisbursementTarget(debitAccountId, authenticatedUserId);
-        BigDecimal monthlyPayment = calculateAnnuityPayment(request.getPrincipalAmount(), request.getTermMonths());
+        BigDecimal annualRate = appSettingsService.getLoanAnnualRate();
+        BigDecimal monthlyPayment = calculateAnnuityPayment(request.getPrincipalAmount(), request.getTermMonths(), annualRate);
         BigDecimal principalAmount = repaymentCalculationService.scaleMoney(request.getPrincipalAmount());
 
         Loan loan = Loan.builder()
@@ -95,7 +96,7 @@ public class LoanService {
 
         executeRepaymentTransfer(senderAccountId, loan.getServiceAccountId(), providedAmount, loan.getCurrency(), authenticatedUserId);
 
-        BigDecimal repaymentRate = loan.getAnnualInterestRate() != null ? loan.getAnnualInterestRate() : annualRate;
+        BigDecimal repaymentRate = loan.getAnnualInterestRate() != null ? loan.getAnnualInterestRate() : appSettingsService.getLoanAnnualRate();
         LoanRepaymentResult repaymentResult = repaymentCalculationService.calculateMonthlyRepaymentResult(
                 loan.getOutstandingPrincipal(),
                 repaymentRate,
@@ -221,7 +222,7 @@ public class LoanService {
         return monthlyPaymentCost(loan.getLoanId(), authenticatedUserId);
     }
 
-    public BigDecimal calculateAnnuityPayment(BigDecimal principalAmount, int termMonths) {
+    public BigDecimal calculateAnnuityPayment(BigDecimal principalAmount, int termMonths, BigDecimal annualRate) {
         loanValidationService.validatePrincipalAmountIsPositive(principalAmount);
         loanValidationService.validateTermMonthsIsPositive(termMonths);
 
