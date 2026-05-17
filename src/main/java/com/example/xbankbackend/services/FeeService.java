@@ -17,8 +17,8 @@ public class FeeService {
         return amount.multiply(BigDecimal.ONE.add(baseFee));
     }
 
-    public BigDecimal applyFee(BigDecimal amount, Float fee) {
-        return amount.multiply(BigDecimal.ONE.add(BigDecimal.valueOf(fee)));
+    public BigDecimal applyFee(BigDecimal amount, BigDecimal fee) {
+        return amount.multiply(BigDecimal.ONE.add(fee));
     }
     public BigDecimal getBaseFeeAmount(BigDecimal amount) {
        return applyBaseFee(amount).subtract(amount);

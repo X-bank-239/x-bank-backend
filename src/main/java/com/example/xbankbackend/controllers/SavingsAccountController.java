@@ -40,12 +40,22 @@ public class SavingsAccountController {
     }
 
     @GetMapping("/interest")
-    public ResponseEntity<BigDecimal> getInterest(@PathVariable boolean allowWithdrawal, @PathVariable boolean allowTopUp) {
+    public ResponseEntity<BigDecimal> getInterest(@RequestParam boolean allowWithdrawal, @RequestParam boolean allowTopUp) {
         log.info("Getting interest, allowWithdrawal {}, allowTopUp {}", allowWithdrawal, allowTopUp);
 
         BigDecimal interest = savingsAccountService.getInterest(allowWithdrawal, allowTopUp);
 
         return ResponseEntity.status(HttpStatus.OK).body(interest);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<SavingsAccount>> getCurrentUserSavingsAccounts(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        log.info("Getting savings accounts for user {}", userId);
+
+        List<SavingsAccount> accounts = savingsAccountService.getByUserId(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(accounts);
     }
 
     // CURRENT USER or ADMIN
@@ -62,7 +72,7 @@ public class SavingsAccountController {
 
     @PostMapping("/prolong/{accountId}")
     @PreAuthorize("hasRole('ADMIN') or @ownershipService.isAccountOwner(#accountId, authentication)")
-    public ResponseEntity<SavingsAccount> prolong(@PathVariable UUID accountId, ProlongSavingsRequest request) {
+    public ResponseEntity<SavingsAccount> prolong(@PathVariable UUID accountId, @RequestBody ProlongSavingsRequest request) {
         log.info("Prolonging account with id {}", accountId);
 
         SavingsAccount account = savingsAccountService.prolong(accountId, request.getNewMaturityDate());
@@ -72,7 +82,7 @@ public class SavingsAccountController {
 
     @DeleteMapping("/close/{accountId}")
     @PreAuthorize("hasRole('ADMIN') or @ownershipService.isAccountOwner(#accountId, authentication)")
-    public ResponseEntity<Void> close(@PathVariable UUID accountId, CloseSavingsRequest request, Authentication auth) {
+    public ResponseEntity<Void> close(@PathVariable UUID accountId, @RequestBody CloseSavingsRequest request, Authentication auth) {
         log.info("Closing account with id {}", accountId);
 
         savingsAccountService.closeAccount(accountId, request.getTargetAccountId(), UUID.fromString(auth.getName()));
@@ -82,7 +92,7 @@ public class SavingsAccountController {
 
     // ADMIN-only
 
-    @GetMapping
+    @GetMapping("/list/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SavingsAccount>> getAllSavingsAccounts() {
         log.info("[ADMIN] Getting all active savings accounts");
