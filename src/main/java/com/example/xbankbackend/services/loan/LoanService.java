@@ -252,6 +252,10 @@ public class LoanService {
                         "Нет активного кредита по счёту " + accountId));
     }
 
+    public BigDecimal getRate() {
+        return appSettingsService.getLoanAnnualRate();
+    }
+
     private void executeRepaymentTransfer(UUID senderAccountId, UUID serviceId, BigDecimal amount, CurrencyType currency,
                                           UUID authenticatedUserId) {
         BigDecimal balance = bankAccountRepository.getBalance(senderAccountId);
