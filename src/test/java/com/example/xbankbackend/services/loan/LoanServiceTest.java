@@ -233,9 +233,12 @@ class LoanServiceTest {
             loan.setDebitAccountId(debitId);
             loan.setServiceAccountId(loanServiceAccountId);
             loan.setTermMonths(12);
+            loan.setMonthlyPayment(new BigDecimal("1000.0000"));
             loan.setOutstandingPrincipal(new BigDecimal("1000.0000"));
             loan.setStatus(LoanStatus.ACTIVE);
             loan.setCurrency(CurrencyType.RUB);
+            loan.setCreatedAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"));
+            loan.setNextPaymentDate(LocalDate.of(2026, 2, 1));
 
             BigDecimal required = new BigDecimal("12000.0000");
             LoanRepaymentRequest request = new LoanRepaymentRequest();
@@ -257,8 +260,8 @@ class LoanServiceTest {
     @DisplayName("Payment cost")
     class PaymentCostTests {
         @Test
-        @DisplayName("calculate full payment cost")
-        void fullPaymentCost_shouldReturnOutstandingPrincipalMultipliedByTermMonths() {
+        @DisplayName("calculate full payment cost from remaining monthly payments")
+        void fullPaymentCost_shouldReturnRemainingMonthlyPayments() {
             UUID userId = UUID.randomUUID();
             UUID loanId = UUID.randomUUID();
 
@@ -266,7 +269,10 @@ class LoanServiceTest {
             loan.setLoanId(loanId);
             loan.setUserId(userId);
             loan.setTermMonths(12);
+            loan.setMonthlyPayment(new BigDecimal("1000.0000"));
             loan.setOutstandingPrincipal(new BigDecimal("1000.0000"));
+            loan.setCreatedAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"));
+            loan.setNextPaymentDate(LocalDate.of(2026, 4, 1));
             loan.setStatus(LoanStatus.ACTIVE);
             loan.setCurrency(CurrencyType.RUB);
 
@@ -274,7 +280,7 @@ class LoanServiceTest {
 
             LoanPaymentAmountResponse response = loanService.fullPaymentCost(loanId, userId);
 
-            assertEquals(new BigDecimal("12000.0000"), response.getAmount().setScale(4, RoundingMode.HALF_UP));
+            assertEquals(new BigDecimal("10000.0000"), response.getAmount().setScale(4, RoundingMode.HALF_UP));
         }
     }
 

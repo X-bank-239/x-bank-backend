@@ -4,6 +4,7 @@ import com.example.xbankbackend.dtos.requests.CreateLoanRequest;
 import com.example.xbankbackend.dtos.requests.LoanRepaymentRequest;
 import com.example.xbankbackend.dtos.responses.LoanPaymentAmountResponse;
 import com.example.xbankbackend.dtos.responses.LoanResponse;
+import com.example.xbankbackend.dtos.result.LoanRepaymentResult;
 import com.example.xbankbackend.enums.CurrencyType;
 import com.example.xbankbackend.enums.LoanStatus;
 import com.example.xbankbackend.enums.TransactionType;
@@ -15,7 +16,6 @@ import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.LoanRepository;
 import com.example.xbankbackend.repositories.UserRepository;
 import com.example.xbankbackend.services.external.notification.EmailSender;
-import com.example.xbankbackend.services.loan.LoanRepaymentCalculationService.LoanRepaymentResult;
 import com.example.xbankbackend.services.transaction.TransactionsService;
 import com.example.xbankbackend.services.user.UserValidationService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,7 +103,7 @@ public class LoanService {
                 loan.getNextPaymentDate()
         );
 
-        if (repaymentResult.shouldCloseLoan()) {
+        if (repaymentResult.isShouldCloseLoan()) {
             loanRepository.close(loanEntityId, OffsetDateTime.now());
             loan.setOutstandingPrincipal(BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP));
             loan.setStatus(LoanStatus.CLOSED);
@@ -110,8 +111,8 @@ public class LoanService {
             return mapper.loanToResponse(loan);
         }
 
-        BigDecimal newOutstanding = repaymentResult.newOutstanding();
-        LocalDate nextPaymentDate = repaymentResult.nextPaymentDate();
+        BigDecimal newOutstanding = repaymentResult.getNewOutstanding();
+        LocalDate nextPaymentDate = repaymentResult.getNextPaymentDate();
         loanRepository.updateRepaymentState(loanEntityId, newOutstanding, nextPaymentDate);
 
         loan.setOutstandingPrincipal(newOutstanding);
@@ -128,11 +129,10 @@ public class LoanService {
     public LoanResponse repayEarly(UUID loanId, LoanRepaymentRequest request, UUID authenticatedUserId) {
         Loan loan = getActiveLoanOwnedById(loanId, authenticatedUserId);
         UUID loanEntityId = loan.getLoanId();
-        BigDecimal months = new BigDecimal(loan.getTermMonths());
         loanValidationService.validateCashLoanContextForRepayment(loan, authenticatedUserId);
         UUID senderAccountId = loan.getDebitAccountId();
 
-        BigDecimal expectedAmount = repaymentCalculationService.scaleMoney(loan.getOutstandingPrincipal().multiply(months));
+        BigDecimal expectedAmount = calculateEarlyRepaymentAmount(loan);
         BigDecimal providedAmount = repaymentCalculationService.scaleMoney(request.getAmount());
         loanValidationService.validateProvidedAmountIsEqualsToExpectedPayment(providedAmount, expectedAmount);
 
@@ -198,10 +198,8 @@ public class LoanService {
 
     public LoanPaymentAmountResponse fullPaymentCost(UUID loanId, UUID authenticatedUserId) {
         Loan loan = getActiveLoanOwnedById(loanId, authenticatedUserId);
-        BigDecimal providedAmount = repaymentCalculationService.scaleMoney(loan.getOutstandingPrincipal());
-        BigDecimal termMonths = new BigDecimal(loan.getTermMonths());
         return LoanPaymentAmountResponse.builder()
-                .amount(providedAmount.multiply(termMonths))
+                .amount(calculateEarlyRepaymentAmount(loan))
                 .build();
     }
 
@@ -285,6 +283,20 @@ public class LoanService {
         } catch (Exception ex) {
             log.warn("Failed to send loan repayment email for loan {}: {}", loan.getLoanId(), ex.getMessage());
         }
+    }
+
+    private BigDecimal calculateEarlyRepaymentAmount(Loan loan) {
+        long paidMonths = ChronoUnit.MONTHS.between(
+                loan.getCreatedAt().toLocalDate().plusMonths(1),
+                loan.getNextPaymentDate()
+        );
+
+        long monthsLeft = loan.getTermMonths() - paidMonths;
+        long remainingMonths = Math.max(1, monthsLeft);
+
+        return repaymentCalculationService.scaleMoney(
+                loan.getMonthlyPayment().multiply(BigDecimal.valueOf(remainingMonths))
+        );
     }
 
 }
