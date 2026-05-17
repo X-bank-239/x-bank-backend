@@ -14,6 +14,7 @@ import com.example.xbankbackend.models.Loan;
 import com.example.xbankbackend.repositories.BankAccountRepository;
 import com.example.xbankbackend.repositories.LoanRepository;
 import com.example.xbankbackend.repositories.UserRepository;
+import com.example.xbankbackend.services.AppSettingsService;
 import com.example.xbankbackend.services.external.notification.EmailSender;
 import com.example.xbankbackend.services.FeeService;
 import com.example.xbankbackend.services.bankAccount.BankAccountValidationService;
@@ -40,9 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Loan service")
@@ -66,6 +65,8 @@ class LoanServiceTest {
     private EmailSender emailSender;
     @Mock
     private FeeService feeService;
+    @Mock
+    private AppSettingsService appSettingsService;
 
     @InjectMocks
     private LoanService loanService;
@@ -78,7 +79,8 @@ class LoanServiceTest {
         ReflectionTestUtils.setField(loanService, "repaymentCalculationService", new LoanRepaymentCalculationService());
         ReflectionTestUtils.setField(loanService, "userValidationService", userValidationService);
         ReflectionTestUtils.setField(loanService, "serviceAccountId", SERVICE_ACCOUNT_ID);
-        ReflectionTestUtils.setField(loanService, "annualRate", new BigDecimal("0.15"));
+        ReflectionTestUtils.setField(loanService, "appSettingsService", appSettingsService);
+        lenient().when(appSettingsService.getLoanAnnualRate()).thenReturn(new BigDecimal("0.15"));
     }
 
     @Nested
@@ -87,7 +89,7 @@ class LoanServiceTest {
         @Test
         @DisplayName("calculate annuity payment using annual rate")
         void calculateAnnuityPayment_shouldUseFifteenPercentAnnualRate() {
-            BigDecimal payment = loanService.calculateAnnuityPayment(new BigDecimal("100000.00"), 12);
+            BigDecimal payment = loanService.calculateAnnuityPayment(new BigDecimal("100000.00"), 12,appSettingsService.getLoanAnnualRate());
             assertEquals(new BigDecimal("9025.83"), payment.setScale(2, RoundingMode.HALF_UP));
         }
     }
@@ -233,9 +235,12 @@ class LoanServiceTest {
             loan.setDebitAccountId(debitId);
             loan.setServiceAccountId(loanServiceAccountId);
             loan.setTermMonths(12);
+            loan.setMonthlyPayment(new BigDecimal("1000.0000"));
             loan.setOutstandingPrincipal(new BigDecimal("1000.0000"));
             loan.setStatus(LoanStatus.ACTIVE);
             loan.setCurrency(CurrencyType.RUB);
+            loan.setCreatedAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"));
+            loan.setNextPaymentDate(LocalDate.of(2026, 2, 1));
 
             BigDecimal required = new BigDecimal("12000.0000");
             LoanRepaymentRequest request = new LoanRepaymentRequest();
@@ -257,8 +262,8 @@ class LoanServiceTest {
     @DisplayName("Payment cost")
     class PaymentCostTests {
         @Test
-        @DisplayName("calculate full payment cost")
-        void fullPaymentCost_shouldReturnOutstandingPrincipalMultipliedByTermMonths() {
+        @DisplayName("calculate full payment cost from remaining monthly payments")
+        void fullPaymentCost_shouldReturnRemainingMonthlyPayments() {
             UUID userId = UUID.randomUUID();
             UUID loanId = UUID.randomUUID();
 
@@ -266,7 +271,10 @@ class LoanServiceTest {
             loan.setLoanId(loanId);
             loan.setUserId(userId);
             loan.setTermMonths(12);
-            loan.setOutstandingPrincipal(new BigDecimal("1000.0000"));
+            loan.setMonthlyPayment(new BigDecimal("1000.0000"));
+            loan.setOutstandingPrincipal(new BigDecimal("10000.0000"));
+            loan.setCreatedAt(OffsetDateTime.parse("2026-01-01T00:00:00Z"));
+            loan.setNextPaymentDate(LocalDate.of(2026, 4, 1));
             loan.setStatus(LoanStatus.ACTIVE);
             loan.setCurrency(CurrencyType.RUB);
 
@@ -274,7 +282,7 @@ class LoanServiceTest {
 
             LoanPaymentAmountResponse response = loanService.fullPaymentCost(loanId, userId);
 
-            assertEquals(new BigDecimal("12000.0000"), response.getAmount().setScale(4, RoundingMode.HALF_UP));
+            assertEquals(new BigDecimal("10000.0000"), response.getAmount().setScale(4, RoundingMode.HALF_UP));
         }
     }
 

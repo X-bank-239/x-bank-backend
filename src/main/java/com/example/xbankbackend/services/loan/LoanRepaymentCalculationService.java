@@ -1,5 +1,6 @@
 package com.example.xbankbackend.services.loan;
 
+import com.example.xbankbackend.dtos.result.LoanRepaymentResult;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,12 +15,12 @@ public class LoanRepaymentCalculationService {
                                                                BigDecimal paymentAmount, LocalDate nextPaymentDate) {
         BigDecimal currentOutstanding = scaleMoney(outstandingPrincipal);
         BigDecimal monthlyInterest = scaleMoney(currentOutstanding.multiply(monthlyRate(annualRate)));
-        BigDecimal principalReduction = scaleMoney(paymentAmount.subtract(monthlyInterest));
-        if (principalReduction.compareTo(BigDecimal.ZERO) < 0) {
-            principalReduction = BigDecimal.ZERO;
+
+        BigDecimal newOutstanding = scaleMoney(currentOutstanding.add(monthlyInterest).subtract(paymentAmount));
+        if (newOutstanding.compareTo(BigDecimal.ZERO) < 0) {
+            newOutstanding = BigDecimal.ZERO;
         }
 
-        BigDecimal newOutstanding = scaleMoney(currentOutstanding.subtract(principalReduction));
         LocalDate newNextPaymentDate = nextPaymentDate.plusMonths(1);
         boolean shouldCloseLoan = newOutstanding.compareTo(BigDecimal.ZERO) <= 0;
 
@@ -34,6 +35,5 @@ public class LoanRepaymentCalculationService {
         return annualRate.divide(MONTHS_IN_YEAR, 16, RoundingMode.HALF_UP);
     }
 
-    public record LoanRepaymentResult(BigDecimal newOutstanding, LocalDate nextPaymentDate, boolean shouldCloseLoan) {
-    }
+
 }
