@@ -186,7 +186,7 @@
 					<destFile>${jacoco.dest.file}</destFile>
 					<dataFile>${jacoco.dest.file}</dataFile>
 					<includes>
-						<include>com/example/xbankbackend/services/**/*</include>
+						<include>com/example/xbankbackend/services/**</include>
 					</includes>
 				</configuration>
 				<executions>
