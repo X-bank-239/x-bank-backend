@@ -19,7 +19,6 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @AllArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/transactions/categories")
 public class CategoriesController {
 
@@ -28,7 +27,7 @@ public class CategoriesController {
 
     @GetMapping("/{code}")
     public ResponseEntity<TransactionCategory> getCategories(@PathVariable String code) {
-        log.info("[ADMIN] Getting category with code {}", code);
+        log.info("Getting category with code {}", code);
 
         TransactionCategory category = categoriesService.getCategory(code);
         return ResponseEntity.status(HttpStatus.OK).body(category);
@@ -36,13 +35,16 @@ public class CategoriesController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TransactionCategory>> getCategories() {
-        log.info("[ADMIN] Getting all categories");
+        log.info("Getting all categories");
 
         List<TransactionCategory> categories = categoriesService.getAllCategories();
         return ResponseEntity.status(HttpStatus.OK).body(categories);
     }
 
+    // ADMIN-only
+
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TransactionCategory> createCategory(@Valid @RequestBody CreateCategoryRequest categoryRequest) {
         log.info("[ADMIN] Creating new category {}", categoryRequest.getCode());
 
@@ -52,6 +54,7 @@ public class CategoriesController {
     }
 
     @PatchMapping("/{code}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TransactionCategory> updateCategory(@PathVariable String code, @RequestBody UpdateCategoryRequest request) {
         log.info("[ADMIN] Updating category with code {}, request: {}", code, request.toString());
 
@@ -60,6 +63,7 @@ public class CategoriesController {
     }
 
     @DeleteMapping("/{code}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCategory(@PathVariable String code) {
         log.info("[ADMIN] Deleting category with code {}", code);
 
