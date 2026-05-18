@@ -26,7 +26,7 @@ public class CreateSavingsAccountRequest {
     private boolean allowWithdrawal;
 
     @NotNull
-    private boolean allowTopUp;
+    private boolean allowTopup;
 
     @DecimalMin("0")
     private BigDecimal earlyWithdrawalPenalty = BigDecimal.valueOf(100);
