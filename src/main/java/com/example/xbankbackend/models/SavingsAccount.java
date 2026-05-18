@@ -13,7 +13,7 @@ public class SavingsAccount {
     private LocalDate maturityDate;
     private LocalDate lastInterestCalculation;
     private boolean allowWithdrawal;
-    private boolean allowTopUp;
+    private boolean allowTopup;
     private BigDecimal earlyWithdrawalPenalty;
     private String status;
     private boolean autoProlong;

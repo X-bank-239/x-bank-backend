@@ -49,7 +49,7 @@ public class SavingsAccountService {
             throw new IllegalArgumentException("Счёт должен быть типа SAVINGS");
         }
 
-        BigDecimal interest = appSettingsService.getSavingsRate(savingsAccount.isAllowWithdrawal(), savingsAccount.isAllowTopUp());
+        BigDecimal interest = appSettingsService.getSavingsRate(savingsAccount.isAllowWithdrawal(), savingsAccount.isAllowTopup());
 
         savingsAccount.setInterestRate(interest);
         savingsAccount.setLastInterestCalculation(LocalDate.now());

@@ -33,7 +33,7 @@ public class SavingsAccountValidationService {
 
     public void validateTopUpAllowed(UUID accountId) {
         SavingsAccount account = savingsAccountRepository.get(accountId);
-        if (!account.isAllowTopUp()) {
+        if (!account.isAllowTopup()) {
             throw new AccessDeniedException("Пополнение запрещено для этого вклада");
         }
     }

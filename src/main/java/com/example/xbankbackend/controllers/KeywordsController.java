@@ -19,7 +19,6 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @AllArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/transactions/keywords")
 public class KeywordsController {
 
@@ -28,7 +27,7 @@ public class KeywordsController {
 
     @GetMapping("/{categoryCode}")
     public ResponseEntity<List<TransactionKeyword>> getKeywordsByCategory(@PathVariable String categoryCode) {
-        log.info("[ADMIN] Getting keywords for category {}", categoryCode);
+        log.info("Getting keywords for category {}", categoryCode);
 
         List<TransactionKeyword> keywords = keywordService.getKeywordsByCategory(categoryCode);
         return ResponseEntity.status(HttpStatus.OK).body(keywords);
@@ -36,13 +35,16 @@ public class KeywordsController {
 
     @GetMapping("/all")
     public ResponseEntity<List<TransactionKeyword>> getAllKeywords() {
-        log.info("[ADMIN] Getting all keywords");
+        log.info("Getting all keywords");
 
         List<TransactionKeyword> keywords = keywordService.getAllKeywords();
         return ResponseEntity.status(HttpStatus.OK).body(keywords);
     }
 
+    // ADMIN-only
+
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TransactionKeyword> createKeyword(@Valid @RequestBody CreateKeywordRequest request) {
         log.info("[ADMIN] Creating keyword {}", request.toString());
 
@@ -52,6 +54,7 @@ public class KeywordsController {
     }
 
     @PatchMapping("/{categoryCode}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TransactionKeyword> updateKeyword(@PathVariable String categoryCode,
                                                             @RequestParam String word,
                                                             @Valid @RequestBody UpdateKeywordRequest request) {
@@ -62,6 +65,7 @@ public class KeywordsController {
     }
 
     @DeleteMapping("/{categoryCode}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteKeyword(@PathVariable String categoryCode,
                                               @RequestParam String word) {
         log.info("[ADMIN] Deleting keyword, category: {}, word: {}", categoryCode, word);
