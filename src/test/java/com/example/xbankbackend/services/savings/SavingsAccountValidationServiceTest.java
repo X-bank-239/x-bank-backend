@@ -82,7 +82,7 @@ class SavingsAccountValidationServiceTest {
         void shouldNotThrow_WhenTopUpAllowed() {
             UUID id = UUID.randomUUID();
             SavingsAccount acc = new SavingsAccount();
-            acc.setAllowTopUp(true);
+            acc.setAllowTopup(true);
 
             when(savingsAccountRepository.get(id)).thenReturn(acc);
 
@@ -93,7 +93,7 @@ class SavingsAccountValidationServiceTest {
         void shouldThrowAccessDeniedException_WhenTopUpNotAllowed() {
             UUID id = UUID.randomUUID();
             SavingsAccount acc = new SavingsAccount();
-            acc.setAllowTopUp(false);
+            acc.setAllowTopup(false);
 
             when(savingsAccountRepository.get(id)).thenReturn(acc);
             assertThatThrownBy(() -> service.validateTopUpAllowed(id))
